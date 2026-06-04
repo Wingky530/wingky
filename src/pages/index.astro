@@ -1,19 +1,136 @@
 ---
-import Nav from '../components/Nav.astro';
 import Canvas from '../components/Canvas.astro';
 import Layout from '../layouts/Layout.astro';
 ---
 <Layout>
   <Canvas />
-  <Nav />
-  <div class="relative flex min-h-screen flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
-    <div class="text-center mt-12 max-w-3xl z-10">
-      <h1 class="text-6xl md:text-8xl font-bold mb-8 tracking-tighter text-outline bg-clip-text">
-        wingky
-      </h1>
-      <p class="text-lg md:text-xl text-muted leading-relaxed max-w-xl mx-auto">
-        I'm building <a href="https://github.com/Wingky530/viewport" class="text-primary hover:underline underline-offset-4 font-medium">ViewPort</a>, an all-in-one web toolkit for developers.
-      </p>
+  
+  <div class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4">
+    
+    <!-- Design-style Grid Background overlay behind the title -->
+    <div id="grid-container" class="absolute w-[360px] h-[180px] md:w-[600px] md:h-[240px] pointer-events-none z-0 opacity-0">
+      <!-- Grid Lines generated dynamically or styled via css -->
+      <div class="absolute inset-0 border border-muted/20"></div>
+      <div class="grid-x absolute inset-y-0 left-1/4 w-[1px] bg-muted/15"></div>
+      <div class="grid-x absolute inset-y-0 left-2/4 w-[1px] bg-muted/15"></div>
+      <div class="grid-x absolute inset-y-0 left-3/4 w-[1px] bg-muted/15"></div>
+      <div class="grid-y absolute inset-x-0 top-1/4 h-[1px] bg-muted/15"></div>
+      <div class="grid-y absolute inset-x-0 top-2/4 h-[1px] bg-muted/15"></div>
+      <div class="grid-y absolute inset-x-0 top-3/4 h-[1px] bg-muted/15"></div>
+      <!-- Accent designer marks in corners -->
+      <div class="absolute -top-1 -left-1 w-2 h-2 border-t border-l border-primary/40"></div>
+      <div class="absolute -top-1 -right-1 w-2 h-2 border-t border-r border-primary/40"></div>
+      <div class="absolute -bottom-1 -left-1 w-2 h-2 border-b border-l border-primary/40"></div>
+      <div class="absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-primary/40"></div>
+    </div>
+
+    <!-- Main Content Flow -->
+    <div class="flex flex-col items-center justify-center z-10 w-full max-w-3xl text-center">
+      
+      <!-- Top Links: Projects & Contact -->
+      <nav id="nav-links" class="opacity-0 translate-y-4 mb-6 flex space-x-12 text-sm font-medium text-muted tracking-widest">
+        <a href="/projects" class="hover:text-primary transition-colors duration-200">PROJECTS</a>
+        <a href="/contact" class="hover:text-primary transition-colors duration-200">CONTACT</a>
+      </nav>
+
+      <!-- Animated Title -->
+      <div id="title-wrapper" class="relative flex items-center justify-center select-none py-4">
+        <h1 id="title" class="text-6xl md:text-8xl font-black uppercase tracking-[0.4em] md:tracking-[0.6em] transition-all duration-1000 ease-out">
+          <span class="letter">w</span><span class="letter">i</span><span class="letter">n</span><span class="letter">g</span><span class="letter">k</span><span class="letter">y</span>
+        </h1>
+      </div>
+
+      <!-- Description -->
+      <div id="desc-text" class="opacity-0 translate-y-4 mt-8">
+        <p class="text-base md:text-lg text-muted leading-relaxed max-w-lg mx-auto">
+          I'm building <a href="https://github.com/Wingky530/viewport" class="text-primary hover:underline underline-offset-4 font-medium">ViewPort</a>, an all-in-one web toolkit for developers.
+        </p>
+      </div>
+
     </div>
   </div>
 </Layout>
+
+<script>
+  import anime from 'animejs';
+
+  window.addEventListener('DOMContentLoaded', () => {
+    // 1. Grid Background Random slide-in
+    const gridContainer = document.querySelector('#grid-container');
+    const gridLinesX = document.querySelectorAll('.grid-x');
+    const gridLinesY = document.querySelectorAll('.grid-y');
+    
+    // Choose random directions
+    const dirX = Math.random() > 0.5 ? -100 : 100;
+    const dirY = Math.random() > 0.5 ? -100 : 100;
+
+    // Set initial positions
+    anime({
+      targets: gridContainer,
+      opacity: [0, 1],
+      duration: 500,
+      easing: 'linear'
+    });
+
+    anime({
+      targets: gridLinesX,
+      translateY: [dirY, 0],
+      opacity: [0, 1],
+      delay: anime.stagger(150),
+      duration: 1200,
+      easing: 'easeOutQuart'
+    });
+
+    anime({
+      targets: gridLinesY,
+      translateX: [dirX, 0],
+      opacity: [0, 1],
+      delay: anime.stagger(150),
+      duration: 1200,
+      easing: 'easeOutQuart'
+    });
+
+    // 2. Letters Build up wireframe skeleton & then fill
+    const letters = document.querySelectorAll('.letter');
+    
+    const timeline = anime.timeline({
+      easing: 'easeOutExpo'
+    });
+
+    // Wireframe reveal sequence (fade stroke & slight initial fill)
+    timeline.add({
+      targets: letters,
+      opacity: [0, 1],
+      scale: [0.8, 1],
+      delay: anime.stagger(120),
+      duration: 800
+    });
+
+    // Fill letters and narrow spacing (contract layout)
+    timeline.add({
+      targets: '#title',
+      letterSpacing: [
+        { value: window.innerWidth < 768 ? '0.15em' : '0.25em', duration: 1200, easing: 'cubicBezier(.25, 1, .5, 1)' }
+      ],
+      changeBegin: () => {
+        // Sequentially fill letters color
+        letters.forEach((l, idx) => {
+          setTimeout(() => {
+            l.classList.add('fill-active');
+          }, idx * 100);
+        });
+      },
+      duration: 1200
+    }, '-=200');
+
+    // 3. Fade in nav-links and description
+    timeline.add({
+      targets: ['#nav-links', '#desc-text'],
+      opacity: [0, 1],
+      translateY: [20, 0],
+      delay: anime.stagger(200),
+      duration: 1000,
+      easing: 'easeOutCubic'
+    }, '-=400');
+  });
+</script>

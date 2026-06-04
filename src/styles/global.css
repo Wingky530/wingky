@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Wingky';
+  src: url('/fonts/wingky.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --color-background: #0a0a0a;
   --color-primary: #ededed;
@@ -8,10 +16,13 @@
   --color-border: #27272a;
 }
 
+body, button, input, select, textarea, a, span, div, h1, h2, h3, h4, h5, h6 {
+  font-family: 'Wingky', sans-serif;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-primary);
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 @keyframes glow {
@@ -37,4 +48,17 @@ body {
 
 canvas {
   display: block;
+}
+
+/* Animations for Title Revamp */
+.letter {
+  display: inline-block;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(237, 237, 237, 0.25);
+  transition: color 1.2s cubic-bezier(0.25, 1, 0.5, 1), -webkit-text-stroke 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.letter.fill-active {
+  color: #ededed;
+  -webkit-text-stroke: 1.5px rgba(237, 237, 237, 0);
 }
