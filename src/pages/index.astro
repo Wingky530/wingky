@@ -1,0 +1,25 @@
+---
+import Nav from '../components/Nav.astro';
+import Canvas from '../components/Canvas.astro';
+---
+<Layout>
+  <Canvas />
+  <Nav />
+  <div class="relative flex min-h-screen flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+    <!-- Top Glow Line -->
+    <div class="w-full max-w-2xl glow-line"></div>
+    
+    <!-- Title and Tagline -->
+    <div class="text-center mt-8">
+      <h1 class="text-5xl font-bold text-outline mb-4">
+        Wingky
+      </h1>
+      <p class="text-lg max-w-xl">
+        I'm building ViewPort, an all-in-one web toolkit for developers.
+      </p>
+    </div>
+    
+    <!-- Bottom Glow Line -->
+    <div class="w-full max-w-2xl glow-line mt-8"></div>
+  </div>
+</Layout>

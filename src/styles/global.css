@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom CSS variables for colors */
+:root {
+  --background: #EBEBDF;
+  --primary: #191265;
+}
+
+/* Apply background and text color */
+body {
+  background-color: var(--background);
+  color: var(--primary);
+}
+
+/* Glow animation for horizontal lines */
+@keyframes glow {
+  0% {
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    background-size: 200% 100%;
+    background-position: -200% 0;
+  }
+  100% {
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    background-size: 200% 100%;
+    background-position: 200% 0;
+  }
+}
+
+.glow-line {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  background-size: 200% 100%;
+  animation: glow 3s linear infinite;
+}
+
+/* Text outline effect */
+.text-outline {
+  -webkit-text-stroke: 1px var(--primary);
+  text-fill-color: transparent;
+}
+
+/* Ensure canvas takes full space */
+canvas {
+  display: block;
+}

@@ -1,0 +1,24 @@
+---
+import Nav from '../components/Nav.astro';
+import Canvas from '../components/Canvas.astro';
+---
+<Layout>
+  <Canvas />
+  <Nav />
+  <div class="min-h-screen flex flex-col items-center justify-center px-4 py-12">
+    <h1 class="text-4xl font-bold mb-8 text-center">Projects</h1>
+    <div class="max-w-2xl w-full text-center">
+      <div class="bg-white/20 backdrop-blur-sm rounded-xl p-8 border border-primary/20">
+        <h2 class="text-2xl font-semibold mb-4">ViewPort</h2>
+        <p class="mb-6">
+          An open-source and free web toolkit — a growing suite of developer utilities
+          starting with a responsive preview tool.
+        </p>
+        <a href="https://github.com/Wingky530/viewport" 
+           class="inline-block bg-primary text-white px-6 py-3 rounded hover:bg-primary/90 transition-colors font-medium">
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>
