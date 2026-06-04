@@ -15,7 +15,7 @@
     "@astrojs/react": "^4.0.0",
     "@phosphor-icons/react": "^2.0.0",
     "@tailwindcss/vite": "^4.0.0",
-    "animejs": "^3.2.0",
+    "animejs": "^4.4.1",
     "astro": "^6.4.4",
     "opentype.js": "^2.0.0",
     "react": "^19.0.0",
