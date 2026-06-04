@@ -6,17 +6,17 @@ import Layout from '../layouts/Layout.astro';
 <Layout>
   <Canvas />
   <Nav />
-  <div class="min-h-screen flex flex-col items-center justify-center px-4 py-12">
-    <h1 class="text-4xl font-bold mb-8 text-center">Projects</h1>
-    <div class="max-w-2xl w-full text-center">
-      <div class="bg-white/20 backdrop-blur-sm rounded-xl p-8 border border-primary/20">
-        <h2 class="text-2xl font-semibold mb-4">ViewPort</h2>
-        <p class="mb-6">
+  <div class="min-h-screen flex flex-col items-center justify-center px-4 py-24">
+    <h1 class="text-4xl md:text-5xl font-bold mb-12 text-center tracking-tight">Projects</h1>
+    <div class="max-w-2xl w-full">
+      <div class="bg-black/40 backdrop-blur-md rounded-xl p-8 border border-border hover:border-muted transition-colors duration-300">
+        <h2 class="text-2xl font-semibold mb-4 text-primary">ViewPort</h2>
+        <p class="mb-8 text-muted leading-relaxed">
           An open-source and free web toolkit — a growing suite of developer utilities
           starting with a responsive preview tool.
         </p>
         <a href="https://github.com/Wingky530/viewport" 
-           class="inline-block bg-primary text-white px-6 py-3 rounded hover:bg-primary/90 transition-colors font-medium">
+           class="inline-flex items-center text-sm font-medium text-background bg-primary px-4 py-2 rounded-md hover:bg-muted transition-colors">
           View on GitHub
         </a>
       </div>

@@ -1,47 +1,40 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* Custom CSS variables for colors */
-:root {
-  --background: #EBEBDF;
-  --primary: #191265;
+@theme {
+  --color-background: #0a0a0a;
+  --color-primary: #ededed;
+  --color-muted: #a1a1aa;
+  --color-accent: #e4e4e7;
+  --color-border: #27272a;
 }
 
-/* Apply background and text color */
 body {
-  background-color: var(--background);
-  color: var(--primary);
+  background-color: var(--color-background);
+  color: var(--color-primary);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Glow animation for horizontal lines */
 @keyframes glow {
   0% {
-    background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    background-size: 200% 100%;
     background-position: -200% 0;
   }
   100% {
-    background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    background-size: 200% 100%;
     background-position: 200% 0;
   }
 }
 
 .glow-line {
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-muted), transparent);
   background-size: 200% 100%;
   animation: glow 3s linear infinite;
 }
 
-/* Text outline effect */
 .text-outline {
-  -webkit-text-stroke: 1px var(--primary);
-  text-fill-color: transparent;
+  -webkit-text-stroke: 1px var(--color-primary);
+  -webkit-text-fill-color: transparent;
 }
 
-/* Ensure canvas takes full space */
 canvas {
   display: block;
 }

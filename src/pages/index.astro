@@ -7,20 +7,13 @@ import Layout from '../layouts/Layout.astro';
   <Canvas />
   <Nav />
   <div class="relative flex min-h-screen flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
-    <!-- Top Glow Line -->
-    <div class="w-full max-w-2xl glow-line"></div>
-    
-    <!-- Title and Tagline -->
-    <div class="text-center mt-8">
-      <h1 class="text-5xl font-bold text-outline mb-4">
-        Wingky
+    <div class="text-center mt-12 max-w-3xl z-10">
+      <h1 class="text-6xl md:text-8xl font-bold mb-8 tracking-tighter text-outline bg-clip-text">
+        wingky
       </h1>
-      <p class="text-lg max-w-xl">
-        I'm building ViewPort, an all-in-one web toolkit for developers.
+      <p class="text-lg md:text-xl text-muted leading-relaxed max-w-xl mx-auto">
+        I'm building <a href="https://github.com/Wingky530/viewport" class="text-primary hover:underline underline-offset-4 font-medium">ViewPort</a>, an all-in-one web toolkit for developers.
       </p>
     </div>
-    
-    <!-- Bottom Glow Line -->
-    <div class="w-full max-w-2xl glow-line mt-8"></div>
   </div>
 </Layout>
