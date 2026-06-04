@@ -1,6 +1,27 @@
 ---
 import Canvas from '../components/Canvas.astro';
 import Layout from '../layouts/Layout.astro';
+import opentype from 'opentype.js';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const TEXT = 'wingky.';
+const FS = 88;
+
+const fontPath = path.resolve('./public/fonts/wingky.ttf');
+const fontBuffer = fs.readFileSync(fontPath);
+const font = opentype.parse(fontBuffer.buffer);
+const scale = FS / font.unitsPerEm;
+
+const glyphs = TEXT.split('').map(char => {
+  const glyph = font.charToGlyph(char);
+  const advance = (glyph.advanceWidth ?? 0) * scale;
+  const opPath = glyph.getPath(0, FS, FS);
+  const d = opPath.toPathData(3);
+  return { d, advance };
+});
+
+const glyphsJson = JSON.stringify(glyphs);
 ---
 <Layout>
   <Canvas />
@@ -8,7 +29,6 @@ import Layout from '../layouts/Layout.astro';
   <div class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4">
     <div class="flex flex-col items-center justify-center z-10 w-full text-center">
 
-      <!-- Top Nav -->
       <nav id="nav-links"
         style="opacity:0;transform:translateY(-20px)"
         class="mb-10 flex space-x-12 text-sm tracking-widest text-muted">
@@ -16,25 +36,21 @@ import Layout from '../layouts/Layout.astro';
         <a href="/contact"  class="hover:text-primary transition-colors duration-200">CONTACT</a>
       </nav>
 
-      <!-- Title area -->
       <div id="title-wrapper" class="relative flex items-center justify-center select-none">
-        <!-- Designer grid (behind) -->
         <svg id="grid-svg"
           class="absolute pointer-events-none"
           style="opacity:0;overflow:visible"
           aria-hidden="true"></svg>
 
-        <!-- Glyph paths -->
         <svg id="text-svg"
+          data-glyphs={glyphsJson}
           class="pointer-events-none"
           style="overflow:visible;display:block"
           aria-hidden="true"></svg>
 
-        <!-- Invisible h1 for a11y only, zero size -->
         <h1 class="sr-only">wingky.</h1>
       </div>
 
-      <!-- Description -->
       <div id="desc-text"
         style="opacity:0;transform:translateY(20px)"
         class="mt-10">
@@ -51,149 +67,106 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import anime from 'animejs';
+  import anime from 'animejs/lib/anime.es.js';
 
-  /* ── wait for font ── */
-  async function waitFont(name: string) {
-    try { await document.fonts.load(`900 72px "${name}"`); } catch {}
-  }
+  window.addEventListener('DOMContentLoaded', () => {
+    const textSvg = document.getElementById('text-svg') as SVGSVGElement & HTMLElement;
+    const gridSvg = document.getElementById('grid-svg') as SVGSVGElement & HTMLElement;
+    const glyphs: { d: string; advance: number }[] = JSON.parse(textSvg.dataset.glyphs!);
+    const TEXT = 'wingky.';
 
-  /* ── load opentype + extract per-glyph paths at x=0 (local coords) ── */
-  async function extractGlyphs(text: string, fontSize: number) {
-    // @ts-ignore
-    const ot = await import('https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.module.js');
-    const font = await ot.load('/fonts/wingky.woff2');
-    const scale = fontSize / font.unitsPerEm;
+    const isMobile  = window.innerWidth < 768;
+    const SCALE     = isMobile ? 0.65 : 1;
+    const INIT_GAP  = isMobile ? 14 : 22;   // px between letters (start, wide)
+    const FINAL_GAP = isMobile ? 1  : 3;    // px between letters (end, mepet)
+    const PAD       = 20;
+    const FSU       = 88; // unscaled font size
 
-    return text.split('').map(char => {
-      const glyph   = font.charToGlyph(char);
-      const advance = (glyph.advanceWidth ?? 0) * scale;
-      // generate path at local origin (x=0, baseline=fontSize)
-      const path    = glyph.getPath(0, fontSize, fontSize);
-      const d       = path.toPathData(3);
-      return { d, advance };
-    });
-  }
-
-  /* ── main ── */
-  window.addEventListener('DOMContentLoaded', async () => {
-    const TEXT        = 'wingky.';
-    const isMobile    = window.innerWidth < 768;
-    const FS          = isMobile ? 56 : 88;           // font size px
-    const INIT_GAP    = isMobile ? 18 : 28;           // extra spacing between letters (start)
-    const FINAL_GAP   = isMobile ? 2  : 4;            // extra spacing (end — agak mepet)
-    const PAD         = 24;                            // left/right padding inside svg
-
-    await waitFont('Wingky');
-
-    const glyphs = await extractGlyphs(TEXT, FS);
-
-    /* ── calculate natural cumulative x positions ── */
-    const naturalX: number[] = [];
-    let cx = PAD;
-    glyphs.forEach(g => { naturalX.push(cx); cx += g.advance; });
-    const naturalTotalW = cx + PAD;
-
-    /* ── initial x positions (with extra gap) ── */
+    // All X coords in unscaled space, SVG viewBox scales visually
     const initX: number[] = [];
-    let ix = PAD;
+    let ix = PAD / SCALE;
     glyphs.forEach((g, i) => {
       initX.push(ix);
-      ix += g.advance + (i < TEXT.length - 1 ? INIT_GAP : 0);
+      ix += g.advance + (i < TEXT.length - 1 ? INIT_GAP / SCALE : 0);
     });
-    const initTotalW = ix + PAD;
+    const initTotalWU = ix + PAD / SCALE;
 
-    /* ── final x positions (mepet) ── */
     const finalX: number[] = [];
-    let fx = PAD;
+    let fx = PAD / SCALE;
     glyphs.forEach((g, i) => {
       finalX.push(fx);
-      fx += g.advance + (i < TEXT.length - 1 ? FINAL_GAP : 0);
+      fx += g.advance + (i < TEXT.length - 1 ? FINAL_GAP / SCALE : 0);
     });
-    const finalTotalW = fx + PAD;
+    const finalTotalWU = fx + PAD / SCALE;
 
-    /* ── SVG dimensions based on init width ── */
-    const SVG_W = initTotalW;
-    const SVG_H = FS * 1.35;
+    const SVG_HU = FSU * 1.4;
 
-    const textSvg = document.getElementById('text-svg') as unknown as SVGSVGElement;
-    const gridSvg = document.getElementById('grid-svg') as unknown as SVGSVGElement;
-
-    const setSize = (svg: SVGSVGElement) => {
-      svg.setAttribute('width',   String(SVG_W));
-      svg.setAttribute('height',  String(SVG_H));
-      svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
+    const applySize = (svg: Element, wU: number) => {
+      svg.setAttribute('viewBox', `0 0 ${wU} ${SVG_HU}`);
+      svg.setAttribute('width',   String(Math.round(wU * SCALE)));
+      svg.setAttribute('height',  String(Math.round(SVG_HU * SCALE)));
     };
-    setSize(textSvg); setSize(gridSvg);
+    applySize(textSvg, initTotalWU);
+    applySize(gridSvg, initTotalWU);
 
-    /* ── create path elements ── */
-    const pathEls: SVGPathElement[] = glyphs.map((g, i) => {
+    // Glyph paths
+    const pathEls = glyphs.map((g, i) => {
       const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       el.setAttribute('d', g.d);
       el.setAttribute('fill', 'transparent');
       el.setAttribute('stroke', 'rgba(237,237,237,0.22)');
-      el.setAttribute('stroke-width', '1.5');
+      el.setAttribute('stroke-width', '1.8');
       el.setAttribute('transform', `translate(${initX[i]}, 0)`);
       textSvg.appendChild(el);
       return el;
     });
 
-    /* ── set dasharray per path ── */
     pathEls.forEach(el => {
-      const len = el.getTotalLength?.() ?? 800;
+      const len = el.getTotalLength ? el.getTotalLength() : 800;
       el.style.strokeDasharray  = String(Math.ceil(len) + 2);
       el.style.strokeDashoffset = String(Math.ceil(len) + 2);
     });
 
-    /* ── designer grid lines ── */
-    const BT = 2, BB = SVG_H - 2, BL = PAD - 10, BR = SVG_W - PAD + 10;
-    const EXT = 30;
-    const BASELINE = FS;
+    // Designer grid
+    const BT = 3, BB = SVG_HU - 3;
+    const BL = PAD / SCALE - 12, BR = initTotalWU - PAD / SCALE + 12;
+    const EXT = 40, BASELINE = FSU, XHEIGHT = BASELINE - FSU * 0.68;
 
-    type LineSpec = { x1:number; y1:number; x2:number; y2:number };
-    const lineSpecs: LineSpec[] = [
-      // cap line
-      { x1: BL - EXT, y1: BT, x2: BR + EXT, y2: BT },
-      // baseline
-      { x1: BL - EXT, y1: BASELINE, x2: BR + EXT, y2: BASELINE },
-      // descender line
-      { x1: BL - EXT, y1: BB, x2: BR + EXT, y2: BB },
-      // left vertical extended
-      { x1: BL, y1: BT - EXT, x2: BL, y2: BB + EXT },
-      // right vertical extended
-      { x1: BR, y1: BT - EXT, x2: BR, y2: BB + EXT },
-      // center vertical
-      { x1: SVG_W / 2, y1: BT - EXT * 0.5, x2: SVG_W / 2, y2: BB + EXT * 0.5 },
-      // x-height (approx 70% of cap)
-      { x1: BL - EXT * 0.6, y1: BASELINE - FS * 0.7, x2: BR + EXT * 0.6, y2: BASELINE - FS * 0.7 },
+    const lineSpecs = [
+      { x1: BL-EXT, y1: BT,       x2: BR+EXT, y2: BT       },
+      { x1: BL-EXT, y1: XHEIGHT,  x2: BR+EXT, y2: XHEIGHT  },
+      { x1: BL-EXT, y1: BASELINE, x2: BR+EXT, y2: BASELINE  },
+      { x1: BL-EXT, y1: BB,       x2: BR+EXT, y2: BB        },
+      { x1: BL, y1: BT-EXT, x2: BL, y2: BB+EXT },
+      { x1: BR, y1: BT-EXT, x2: BR, y2: BB+EXT },
+      { x1: initTotalWU/2, y1: BT-EXT*0.6, x2: initTotalWU/2, y2: BB+EXT*0.6 },
     ];
 
     const lineEls = lineSpecs.map(s => {
       const el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       el.setAttribute('x1', String(s.x1)); el.setAttribute('y1', String(s.y1));
       el.setAttribute('x2', String(s.x2)); el.setAttribute('y2', String(s.y2));
-      el.setAttribute('stroke', 'rgba(237,237,237,0.14)');
-      el.setAttribute('stroke-width', '0.7');
+      el.setAttribute('stroke', 'rgba(237,237,237,0.13)');
+      el.setAttribute('stroke-width', '0.8');
       el.style.opacity = '0';
       gridSvg.appendChild(el);
       return el;
     });
 
-    /* corner + midpoint ticks */
-    const tickPoints = [
-      [BL, BT], [BR, BT], [BL, BB], [BR, BB],
-      [SVG_W / 2, BT], [SVG_W / 2, BB],
-      [BL, BASELINE], [BR, BASELINE],
+    const tickPts: [number,number][] = [
+      [BL,BT],[BR,BT],[BL,BB],[BR,BB],
+      [BL,BASELINE],[BR,BASELINE],
+      [initTotalWU/2,BT],[initTotalWU/2,BB],
     ];
-    const tickEls = tickPoints.map(([tx, ty]) => {
-      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      const sz = 6;
-      [[tx - sz, ty, tx + sz, ty], [tx, ty - sz, tx, ty + sz]].forEach(([x1,y1,x2,y2]) => {
-        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        l.setAttribute('x1', String(x1)); l.setAttribute('y1', String(y1));
-        l.setAttribute('x2', String(x2)); l.setAttribute('y2', String(y2));
-        l.setAttribute('stroke', 'rgba(237,237,237,0.32)');
-        l.setAttribute('stroke-width', '0.9');
+    const tickEls = tickPts.map(([tx,ty]) => {
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      const sz = 7;
+      ([[tx-sz,ty,tx+sz,ty],[tx,ty-sz,tx,ty+sz]] as [number,number,number,number][]).forEach(([x1,y1,x2,y2]) => {
+        const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+        l.setAttribute('x1',String(x1)); l.setAttribute('y1',String(y1));
+        l.setAttribute('x2',String(x2)); l.setAttribute('y2',String(y2));
+        l.setAttribute('stroke','rgba(237,237,237,0.38)');
+        l.setAttribute('stroke-width','1');
         g.appendChild(l);
       });
       g.style.opacity = '0';
@@ -201,105 +174,68 @@ import Layout from '../layouts/Layout.astro';
       return g;
     });
 
-    /* ── ANIMATION ─────────────────────────────────────────────────── */
-    const tl = anime.timeline({ easing: 'easeOutExpo' });
+    // ── TIMELINE (anime v3) ───────────────────────────────────────────
+    const tl = anime.timeline({ easing: 'easeOutExpo', autoplay: true });
 
-    /* Phase 1 — grid draws in */
-    tl.add({
-      targets: gridSvg,
-      opacity: [0, 1],
-      duration: 250,
-      easing: 'linear'
-    });
-    tl.add({
-      targets: lineEls,
-      opacity: [0, 1],
-      delay: anime.stagger(55),
-      duration: 380,
-      easing: 'easeOutCubic'
-    }, '-=100');
-    tl.add({
-      targets: tickEls,
-      opacity: [0, 1],
-      delay: anime.stagger(40),
-      duration: 280,
-      easing: 'easeOutCubic'
-    }, '-=250');
+    // Phase 1: grid
+    tl.add({ targets: gridSvg, opacity: [0,1], duration: 250, easing: 'linear' });
+    tl.add({ targets: lineEls, opacity: [0,1], delay: anime.stagger(55), duration: 380, easing: 'easeOutCubic' }, '-=100');
+    tl.add({ targets: tickEls, opacity: [0,1], delay: anime.stagger(40), duration: 280, easing: 'easeOutCubic' }, '-=250');
+    tl.add({ targets: 'body', duration: 200 }); // pause
 
-    /* Phase 2 — stroke-draw each letter */
-    tl.add({ duration: 180 }); // breath pause
-
+    // Phase 2: draw each letter stroke
     glyphs.forEach((_, i) => {
       const el  = pathEls[i];
       const len = parseFloat(el.style.strokeDasharray);
-      const dur = 420 + len * 0.18; // longer glyphs take longer
+      const dur = 380 + len * 0.15;
       tl.add({
         targets: el,
         strokeDashoffset: [len, 0],
         duration: dur,
         easing: 'easeInOutSine'
-      }, i === 0 ? '+=0' : `-=${dur * 0.55}`);
+      }, i === 0 ? '+=0' : `-=${dur * 0.52}`);
     });
 
-    /* Phase 3 — fill + contract spacing (run together) */
-    tl.add({ duration: 160 });
+    tl.add({ targets: 'body', duration: 180 });
 
-    // fill animation (stroke fades, fill appears)
+    // Phase 3: fill + contract
     pathEls.forEach((el, i) => {
       tl.add({
         targets: el,
-        duration: 520,
+        duration: 480,
         easing: 'easeOutCubic',
-        update(anim) {
+        update(anim: any) {
           const p = anim.progress / 100;
           el.setAttribute('fill',   `rgba(237,237,237,${p.toFixed(3)})`);
-          el.setAttribute('stroke', `rgba(237,237,237,${(0.22 * (1 - p)).toFixed(3)})`);
+          el.setAttribute('stroke', `rgba(237,237,237,${(0.22*(1-p)).toFixed(3)})`);
         },
         complete() {
-          el.setAttribute('fill',   '#ededed');
+          el.setAttribute('fill', '#ededed');
           el.setAttribute('stroke', 'none');
         }
-      }, i === 0 ? '+=0' : `-=${520 - 55}`);
+      }, i === 0 ? '+=0' : `-=${480 - 50}`);
     });
 
-    // contract spacing (runs alongside fill)
+    // Contract spacing via plain object tween
+    const state = { p: 0 };
     tl.add({
-      targets: {},
-      duration: 900,
-      easing: 'cubicBezier(.25, 1, .5, 1)',
-      update(anim) {
-        const p = anim.progress / 100;
+      targets: state,
+      p: 1,
+      duration: 850,
+      easing: 'cubicBezier(.25,1,.5,1)',
+      update() {
         pathEls.forEach((el, i) => {
-          const x = initX[i] + (finalX[i] - initX[i]) * p;
+          const x = initX[i] + (finalX[i] - initX[i]) * state.p;
           el.setAttribute('transform', `translate(${x}, 0)`);
         });
-        // shrink SVG width to match
-        const w = initTotalW + (finalTotalW - initTotalW) * p;
-        textSvg.setAttribute('width',   String(w));
-        textSvg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
+        const wU = initTotalWU + (finalTotalWU - initTotalWU) * state.p;
+        applySize(textSvg, wU);
       }
-    }, `-=${520 * pathEls.length - 120}`);
+    }, `-=${480 * pathEls.length - 150}`);
 
-    /* Phase 4 — grid fades out, nav + desc appear */
-    tl.add({
-      targets: gridSvg,
-      opacity: [1, 0],
-      duration: 700,
-      easing: 'easeOutCubic'
-    });
-    tl.add({
-      targets: '#nav-links',
-      opacity: [0, 1],
-      translateY: [-20, 0],
-      duration: 700,
-      easing: 'easeOutCubic'
-    }, '-=500');
-    tl.add({
-      targets: '#desc-text',
-      opacity: [0, 1],
-      translateY: [20, 0],
-      duration: 700,
-      easing: 'easeOutCubic'
-    }, '-=550');
+    // Phase 4: grid out, nav + desc in
+    tl.add({ targets: gridSvg,      opacity: [1,0],  duration: 600, easing: 'easeOutCubic' });
+    tl.add({ targets: '#nav-links', opacity: [0,1], translateY: [-20,0], duration: 700, easing: 'easeOutCubic' }, '-=450');
+    tl.add({ targets: '#desc-text', opacity: [0,1], translateY: [20,0],  duration: 700, easing: 'easeOutCubic' }, '-=550');
   });
 </script>
