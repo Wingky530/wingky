@@ -1,4 +1,4 @@
-# Wingky
+# <i>Wingky.</i>
 
 ![Wingky Logo](public/img/logo.png)
 
