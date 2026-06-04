@@ -1,12 +1,10 @@
 import { defineConfig } from 'astro/config';
-import tailwind from '@astrojs/tailwind';
 import react from '@astrojs/react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  site: 'https://wingky.vercel.app',
-  integrations: [
-    tailwind(),
-    react(),
-  ],
-  output: 'static',
+  integrations: [react()],
+  vite: {
+    plugins: [tailwindcss()],
+  },
 });
