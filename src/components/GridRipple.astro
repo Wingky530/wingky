@@ -1,0 +1,87 @@
+---
+/**
+ * GridRipple.astro
+ *
+ * Layer transparan khusus untuk efek ripple flash saat theme toggle.
+ * z-index tinggi (di atas overlay) agar flash terlihat menimpa reveal circle.
+ * Mendengarkan custom event 'theme-ripple' dari ThemeToggle untuk trigger animasi.
+ */
+---
+
+<div id="grid-ripple" aria-hidden="true"></div>
+
+<style>
+  #grid-ripple {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 45;
+    overflow: hidden;
+  }
+
+  #grid-ripple > :global(div) {
+    background-color: transparent;
+  }
+</style>
+
+<script>
+  import { animate } from 'animejs';
+
+  const CELL_SIZE = 36;
+
+  function buildRippleGrid() {
+    const container = document.getElementById('grid-ripple');
+    if (!container) return;
+
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const cols = Math.ceil(W / CELL_SIZE) + 1;
+    const rows = Math.ceil(H / CELL_SIZE) + 1;
+
+    container.innerHTML = '';
+    container.style.display = 'grid';
+    container.style.gridTemplateColumns = `repeat(${cols}, ${CELL_SIZE}px)`;
+    container.style.gridTemplateRows = `repeat(${rows}, ${CELL_SIZE}px)`;
+
+    const frag = document.createDocumentFragment();
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cell = document.createElement('div');
+        cell.setAttribute('data-ripple-cell', '');
+        frag.appendChild(cell);
+      }
+    }
+    container.appendChild(frag);
+  }
+
+  buildRippleGrid();
+
+  let resizeTimer: ReturnType<typeof setTimeout>;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(buildRippleGrid, 150);
+  });
+
+  // Listen for ripple trigger from ThemeToggle
+  window.addEventListener('theme-ripple', ((e: CustomEvent) => {
+    const { x, y, nextTheme } = e.detail;
+    const cells = document.querySelectorAll('[data-ripple-cell]');
+    if (!cells.length) return;
+
+    // Warna ripple = primary tema berikutnya (kontras terhadap overlay bg)
+    const flashColor = nextTheme === 'dark' ? '235,235,223' : '37,36,34';
+
+    animate(cells, {
+      backgroundColor: [`rgba(${flashColor},0)`, `rgba(${flashColor},1)`, `rgba(${flashColor},0)`],
+      duration: 1200,
+      ease: 'outQuad',
+      delay: (_el: Element, i: number) => {
+        const el = _el as HTMLElement;
+        const cr = el.getBoundingClientRect();
+        const dx = cr.left + cr.width / 2 - x;
+        const dy = cr.top + cr.height / 2 - y;
+        return Math.hypot(dx, dy) * 0.8;
+      },
+    });
+  }) as EventListener);
+</script>

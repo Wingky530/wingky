@@ -1,0 +1,61 @@
+---
+/**
+ * GridBackground.astro
+ *
+ * Layer grid transparan (garis-garis) sebagai background texture.
+ * z-index rendah agar kena efek overlay reveal.
+ * Grid di-rebuild otomatis saat window resize (debounced 150ms).
+ */
+---
+
+<div id="grid-background" aria-hidden="true"></div>
+
+<style>
+  #grid-background {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  #grid-background > :global(div) {
+    border-right:  1px solid color-mix(in srgb, var(--color-border) 18%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 18%, transparent);
+  }
+</style>
+
+<script>
+  const CELL_SIZE = 36;
+
+  function buildGrid() {
+    const container = document.getElementById('grid-background');
+    if (!container) return;
+
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const cols = Math.ceil(W / CELL_SIZE) + 1;
+    const rows = Math.ceil(H / CELL_SIZE) + 1;
+
+    container.innerHTML = '';
+    container.style.display = 'grid';
+    container.style.gridTemplateColumns = `repeat(${cols}, ${CELL_SIZE}px)`;
+    container.style.gridTemplateRows = `repeat(${rows}, ${CELL_SIZE}px)`;
+
+    const frag = document.createDocumentFragment();
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        frag.appendChild(document.createElement('div'));
+      }
+    }
+    container.appendChild(frag);
+  }
+
+  let resizeTimer: ReturnType<typeof setTimeout>;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(buildGrid, 150);
+  });
+
+  buildGrid();
+</script>

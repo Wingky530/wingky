@@ -1,18 +1,30 @@
 ---
-import '../styles/global.css';
+import '@/styles/global.css';
+import GridBackground from '../components/GridBackground.astro';
+import GridRipple from '../components/GridRipple.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 
 const { slot } = Astro.props;
 ---
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth bg-background text-primary overflow-hidden">
+<html lang="en" data-theme="dark" class="scroll-smooth bg-background text-primary overflow-hidden">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Wingky</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/styles/global.css" />
     <meta name="description" content="Personal portfolio of Wingky" />
+    <script>
+      (function() {
+        var t = localStorage.getItem('wingky-theme');
+        if (t) document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
   </head>
   <body>
+    <GridBackground />
+    <GridRipple />
     <slot />
+    <ThemeToggle />
   </body>
 </html>

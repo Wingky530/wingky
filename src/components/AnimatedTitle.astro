@@ -1,36 +1,4 @@
 ---
-/*
- * AnimatedTitle.astro
- *
- * Renders the "Wingky" logo as SVG paths derived from a TTF font via opentype.js.
- * On the home page it plays a multi-phase entry animation; on subpages (Nav) it
- * renders the compact final state immediately.
- *
- * ── Frontmatter (SSR) ──
- * - Glyph loading & path generation  Parse font, extract SVG path `d` for each
- *                                     character, append `Z` to close paths.
- * - Desktop dimension pre-compute     Calculate initial (spread) and final (compact)
- *                                     glyph X positions plus SVG viewBox sizes.
- * - Responsive classes/styles         Home: centered; Nav: fixed top-left 24px.
- *
- * ── Client script blocks ──
- * - hexToRgb(hex)                     Convert "#rrggbb" → {r,g,b}.
- * - applySize(svg, wU, s)             Set viewBox + scaled width/height on an SVG.
- * - setHomeFinalState(s)              Jump glyphs to final compact state (skip-anim).
- * - Path creation                     Build <path> elements, initial transparent fill.
- * - Non-homepage early return         Render compact nav state immediately & exit.
- * - Animation skip logic              Detect reload vs navigation via
- *                                     PerformanceNavigationTiming + sessionStorage.
- * - Grid line generation              Compute bbox, inner/outer grid lines, random
- *                                     draw direction (LTR/RTL, TTB/BTT).
- * - Tick mark generation              Crosshair markers at key intersections.
- * - Timeline sequences:
- *   1. Grid fade-in + stroke-dash draw
- *   2. Stroke-draw animation (per-path +10 tolerance)
- *   3. Fill animation (transparent → solid)
- *   4. Contract + skew animation (spread → compact)
- *   5. Grid fade-out + nav-links / desc-text reveal
- */
 import opentype from 'opentype.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -306,8 +274,10 @@ const gridSvgClasses = [
       gridSvg.style.opacity = '0';
       const navLinks = document.getElementById('nav-links');
       const descText = document.getElementById('desc-text');
+      const themeToggle = document.getElementById('theme-toggle');
       if (navLinks) { navLinks.style.opacity = '1'; navLinks.style.transform = 'translateY(0)'; }
       if (descText) { descText.style.opacity = '1'; descText.style.transform = 'translateY(0)'; }
+      if (themeToggle) themeToggle.style.opacity = '1';
       return;
     }
 
@@ -395,36 +365,29 @@ const gridSvgClasses = [
       opacity: [0,1], 
       strokeDashoffset: (el) => [parseFloat(el.dataset.initialOffset || '0'), 0],
       delay: stagger(40), 
-      duration: 600, 
+      duration: 500, 
       ease: 'outCubic' 
-    }, '-=100');
-    tl.add(tickEls, { opacity: [0,1], delay: stagger(35), duration: 250, ease: 'outCubic' }, '-=200');
-    tl.add({},      { duration: 200 });
-
+    }, '-=80');
+    tl.add(tickEls, { opacity: [0,1], delay: stagger(35), duration: 200, ease: 'outCubic' }, '-=120');
+    tl.add({},      { duration: 100 });
 
     // ── Stroke-draw animation ──
-    tl.add({}, { duration: 200 });
-
-pathEls.forEach((el, i) => {
-  // Add +10 tolerance to ensure stroke closes completely
-  const actualLen = Math.max(
-    (el.getTotalLength ? el.getTotalLength() : 1500) + 10,
-    300
-  );
-  
-  el.setAttribute('stroke-dasharray', String(actualLen));
-  el.setAttribute('stroke-dashoffset', String(actualLen));
-
-  const dur = 400 + actualLen * 0.14;
-  tl.add(el, {
-    strokeDashoffset: [actualLen, 0],
-    duration: dur,
-    ease: 'inOutSine'
-  }, i === 0 ? '+=0' : `-=${dur * 0.20}`);
-});
-
-tl.add({}, { duration: 200 });
-
+    const fillDur = 350;
+    pathEls.forEach((el, i) => {
+      const actualLen = Math.max(
+        (el.getTotalLength ? el.getTotalLength() : 1500) + 10,
+        300
+      );
+      el.setAttribute('stroke-dasharray', String(actualLen));
+      el.setAttribute('stroke-dashoffset', String(actualLen));
+      const dur = 300 + actualLen * 0.10;
+      tl.add(el, {
+        strokeDashoffset: [actualLen, 0],
+        duration: dur,
+        ease: 'inOutSine'
+      }, i === 0 ? '+=0' : `-=${dur * 0.40}`);
+    });
+    tl.add({}, { duration: 100 });
 
     const fillStates = pathEls.map(() => ({ v: 0 }));
     pathEls.forEach((el, i) => {
@@ -433,7 +396,7 @@ tl.add({}, { duration: 200 });
       const C      = isDot ? A : P;
       tl.add(state, {
         v: 1,
-        duration: 500,
+        duration: fillDur,
         ease: 'outCubic',
         onUpdate() {
           const p = state.v;
@@ -451,13 +414,13 @@ tl.add({}, { duration: 200 });
             el.setAttribute('stroke-width', '2');
           }
         }
-      }, i === 0 ? '+=0' : `-=${480 - 50}`);
+      }, i === 0 ? '+=0' : `-=${fillDur - 50}`);
     });
 
     const contractState = { p: 0 };
     tl.add(contractState, {
       p: 1,
-      duration: 850,
+      duration: 550,
       ease: 'outQuart',
       onUpdate() {
         const p    = contractState.p;
@@ -473,8 +436,32 @@ tl.add({}, { duration: 200 });
       }
     }, '+=0');
 
-    tl.add(gridSvg,      { opacity: [1,0], duration: 600, ease: 'outCubic' });
-    tl.add('#nav-links', { opacity: [0,1], translateY: [-20,0], duration: 700, ease: 'outCubic' }, '-=450');
-    tl.add('#desc-text', { opacity: [0,1], translateY: [20,0],  duration: 700, ease: 'outCubic', onComplete() { sessionStorage.setItem('wingky-anim-played', '1'); } }, '-=550');
+    tl.add(gridSvg,      { opacity: [1,0], duration: 400, ease: 'outCubic' });
+    tl.add('#nav-links', { opacity: [0,1], translateY: [-20,0], duration: 500, ease: 'outCubic' }, '-=250');
+    tl.add('#theme-toggle', { opacity: [0,1], duration: 400, ease: 'outCubic' }, '-=350');
+    tl.add('#desc-text', { opacity: [0,1], translateY: [20,0],  duration: 500, ease: 'outCubic', onComplete() { sessionStorage.setItem('wingky-anim-played', '1'); } }, '-=250');
   });
+
+  function syncPathColors() {
+    if (!textSvg || pathEls.length === 0) return;
+    const css = getComputedStyle(document.documentElement);
+    const P = css.getPropertyValue('--color-primary').trim();
+    const A = css.getPropertyValue('--color-accent').trim();
+    const BG = css.getPropertyValue('--color-background').trim();
+    const DOT_IDX = (textSvg.getAttribute('data-text') ?? '').length - 1;
+    pathEls.forEach((el, i) => {
+      const isDot = i === DOT_IDX;
+      if (isDot) {
+        el.setAttribute('fill', A);
+        el.setAttribute('stroke', BG);
+        el.setAttribute('stroke-width', '5');
+      } else {
+        el.setAttribute('fill', P);
+        el.setAttribute('stroke', P);
+        el.setAttribute('stroke-width', '2');
+      }
+    });
+  }
+
+  window.addEventListener('themechange', syncPathColors);
 </script>
