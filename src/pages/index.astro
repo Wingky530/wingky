@@ -106,7 +106,7 @@ const glyphsJson = JSON.stringify(glyphs);
     const FSU       = 130;
     const GLYPH_VERTICAL_OFFSET = -10;
     const SKEW_FINAL = -12; // derajat italic di akhir animasi
-    const DOT_SHIFT = -15; // dot digeser lebih kiri dari posisi final normal
+    const DOT_SHIFT = -30; // dot digeser lebih kiri dari posisi final normal
 
     // ── Posisi X huruf ────────────────────────────────────────────────
     const initX: number[] = [];
@@ -123,7 +123,10 @@ const glyphsJson = JSON.stringify(glyphs);
       finalX.push(fx);
       fx += g.advance + (i < TEXT.length - 1 ? FINAL_GAP / SCALE : 0);
     });
-    const finalTotalWU = fx + PAD / SCALE;
+    let finalTotalWU = fx + PAD / SCALE;
+
+    // Adjust finalTotalWU to account for DOT_SHIFT on the last glyph
+    finalTotalWU += DOT_SHIFT;
 
     const SVG_HU = FSU * 1.4;
 
