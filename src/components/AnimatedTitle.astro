@@ -1,0 +1,275 @@
+---
+import opentype from 'opentype.js';
+import fs from 'node:fs';
+import path from 'node:path';
+
+interface Props {
+  text: string;
+  isHomePage: boolean;
+}
+
+const { text, isHomePage } = Astro.props;
+
+// Font loading and glyph generation (same as index.astro)
+const FS = 130;
+const FSU = 130;
+
+const fontPath = path.resolve('./public/fonts/wingky.ttf');
+const fontBuffer = fs.readFileSync(fontPath);
+const font = opentype.parse(fontBuffer.buffer);
+const scale = FS / font.unitsPerEm;
+
+const glyphs = text.split('').map(char => {
+  const glyph = font.charToGlyph(char);
+  const advance = (glyph.advanceWidth ?? 0) * scale;
+  const opPath = glyph.getPath(0, FSU, FS);
+  const d = opPath.toPathData(3);
+  return { d, advance };
+});
+
+const glyphsJson = JSON.stringify(glyphs);
+
+// CSS classes for positioning based on isHomePage
+const wrapperClasses = [
+  "relative flex items-center justify-center select-none",
+  isHomePage ? "" : "absolute top-6 left-6 z-20"
+];
+
+const gridSvgClasses = [
+  "pointer-events-none",
+  isHomePage ? "absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" : "hidden"
+];
+---
+
+{
+  isHomePage ? (
+    <div id="title-wrapper" class:list={wrapperClasses}>
+      <svg id="grid-svg"
+        class:list={gridSvgClasses}
+        style="opacity:0;overflow:visible"
+        aria-hidden="true"></svg>
+
+      <svg id="text-svg"
+        data-glyphs={glyphsJson}
+        class="pointer-events-none"
+        style="overflow:visible;display:block"
+        aria-hidden="true"></svg>
+
+      <h1 class="sr-only">{text}</h1>
+    </div>
+  ) : (
+    <a href="/">
+      <div id="title-wrapper" class:list={wrapperClasses}>
+        <svg id="grid-svg"
+          class:list={gridSvgClasses}
+          style="opacity:0;overflow:visible"
+          aria-hidden="true"></svg>
+
+        <svg id="text-svg"
+          data-glyphs={glyphsJson}
+          class="pointer-events-none"
+          style="overflow:visible;display:block"
+          aria-hidden="true"></svg>
+
+        <h1 class="sr-only">{text}</h1>
+      </div>
+    </a>
+  )
+}
+
+<script define:vars={{ glyphsJson, text, isHomePage }}>
+  import { createTimeline } from 'animejs/timeline';
+  import { stagger } from 'animejs/utils';
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const textSvg = document.getElementById('text-svg') as SVGSVGElement & HTMLElement;
+    const gridSvg = document.getElementById('grid-svg') as SVGSVGElement & HTMLElement;
+    const glyphs: { d: string; advance: number }[] = JSON.parse(glyphsJson);
+    const TEXT = text;
+    const DOT_IDX = TEXT.length - 1;
+
+    // ── Baca CSS vars ─────────────────────────────────────────────────
+    const cssVars = getComputedStyle(document.documentElement);
+    const COLOR_PRIMARY = cssVars.getPropertyValue('--color-primary').trim();
+    const COLOR_BG      = cssVars.getPropertyValue('--color-background').trim();
+    const COLOR_ACCENT  = cssVars.getPropertyValue('--color-accent').trim();
+
+    function hexToRgb(hex: string) {
+      const h = hex.replace('#', '');
+      return {
+        r: parseInt(h.slice(0, 2), 16),
+        g: parseInt(h.slice(2, 4), 16),
+        b: parseInt(h.slice(4, 6), 16),
+      };
+    }
+
+    const P  = hexToRgb(COLOR_PRIMARY);
+    const A  = hexToRgb(COLOR_ACCENT);
+    const BG = hexToRgb(COLOR_BG);
+
+    // ── Konstanta layout ──────────────────────────────────────────────
+    const isMobile  = window.innerWidth < 768;
+    const SCALE     = isMobile ? 0.50 : 1;
+    const INIT_GAP  = isMobile ? 20 : 40;
+    const FINAL_GAP = isMobile ? 0.5  : 1.5;
+    const PAD       = 20;
+    const FSU       = 130;
+    const GLYPH_VERTICAL_OFFSET = -10;
+    const SKEW_FINAL = -12;
+    const DOT_SHIFT = -60;
+
+    // ── Posisi X huruf ────────────────────────────────────────────────
+    const initX: number[] = [];
+    let ix = PAD / SCALE;
+    glyphs.forEach((g, i) => {
+      initX.push(ix);
+      ix += g.advance + (i < TEXT.length - 1 ? INIT_GAP / SCALE : 0);
+    });
+    const initTotalWU = ix + PAD / SCALE;
+
+    const finalX: number[] = [];
+    let fx = PAD / SCALE;
+    glyphs.forEach((g, i) => {
+      finalX.push(fx);
+      fx += g.advance + (i < TEXT.length - 1 ? FINAL_GAP / SCALE : 0);
+    });
+    let finalTotalWU = fx + PAD / SCALE;
+
+    finalTotalWU += DOT_SHIFT;
+
+    const SVG_HU = FSU * 1.4;
+
+    const applySize = (svg: Element, wU: number, s: number) => {
+      svg.setAttribute('viewBox', `0 0 ${wU} ${SVG_HU}`);
+      svg.setAttribute('width',   String(Math.round(wU * s)));
+      svg.setAttribute('height',  String(Math.round(SVG_HU * s)));
+    };
+
+    // ── Buat path tiap huruf ──────────────────────────────────────────
+    const pathEls = glyphs.map((g, i) => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const isDot = i === DOT_IDX;
+      el.setAttribute('d', g.d);
+      el.setAttribute('fill', 'transparent');
+      el.setAttribute('stroke', isDot
+        ? `rgba(${A.r},${A.g},${A.b},0.4)`
+        : `rgba(${P.r},${P.g},${P.b},0.22)`
+      );
+      el.setAttribute('stroke-width', isDot ? '4' : '3');
+      el.setAttribute('transform', `translate(${initX[i]}, ${GLYPH_VERTICAL_OFFSET})`);
+      textSvg.appendChild(el);
+      return el;
+    });
+
+    if (!isHomePage) {
+        textSvg.style.opacity = '1';
+        const finalTitleScale = isMobile ? 0.25 : 0.35;
+
+        // Initialize to final state
+        pathEls.forEach((el, i) => {
+            const xFinal = finalX[i] + (i === DOT_IDX ? DOT_SHIFT : 0);
+            const skew = SKEW_FINAL;
+            const s = i === DOT_IDX ? 0 : skew;
+            el.setAttribute('transform', `translate(${xFinal * finalTitleScale}, ${GLYPH_VERTICAL_OFFSET * finalTitleScale}) ${i === DOT_IDX ? '' : `skewX(${s})`}`);
+            
+            const isDot  = i === DOT_IDX;
+            const C      = isDot ? A : P;
+            if (isDot) {
+                el.setAttribute('fill',         COLOR_ACCENT);
+                el.setAttribute('stroke',       COLOR_BG);
+                el.setAttribute('stroke-width', '5');
+            } else {
+                el.setAttribute('fill',   COLOR_PRIMARY);
+                el.setAttribute('stroke', COLOR_PRIMARY);
+                el.setAttribute('stroke-width', '2');
+            }
+        });
+        
+        applySize(textSvg, finalTotalWU, finalTitleScale); // Use finalTitleScale for overall SVG scaling
+        return; // Skip animation timeline for non-home page
+    }
+
+    // Path animation setup (only for home page)
+    pathEls.forEach(el => {
+      const len = el.getTotalLength ? el.getTotalLength() : 800;
+      el.style.strokeDasharray  = String(Math.ceil(len) + 2);
+      el.style.strokeDashoffset = String(Math.ceil(len) + 2);
+    });
+
+    // ── TIMELINE ──────────────────────────────────────────────────────
+    const tl = createTimeline({ defaults: { ease: 'outExpo' }, autoplay: true });
+
+    // Phase 1: grid in
+    tl.add(gridSvg, { opacity: [0,1], duration: 250, ease: 'linear' });
+    tl.add(lineEls, { opacity: [0,1], delay: stagger(40), duration: 350, ease: 'outCubic' }, '-=100');
+    tl.add(tickEls, { opacity: [0,1], delay: stagger(35), duration: 250, ease: 'outCubic' }, '-=200');
+    tl.add({},      { duration: 200 });
+
+    // Phase 2: stroke draw per letter
+    pathEls.forEach((el, i) => {
+      const len = parseFloat(el.style.strokeDasharray);
+      const dur = 350 + len * 0.14;
+      tl.add(el, {
+        strokeDashoffset: [len, 0],
+        duration: dur,
+        ease: 'inOutSine'
+      }, i === 0 ? '+=0' : `-=${dur * 0.52}`);
+    });
+
+    tl.add({}, { duration: 180 });
+
+    // Phase 3a: fill tiap huruf — titik pakai accent, sisanya primary
+    const fillStates = pathEls.map(() => ({ v: 0 }));
+    pathEls.forEach((el, i) => {
+      const state  = fillStates[i];
+      const isDot  = i === DOT_IDX;
+      const C      = isDot ? A : P;
+      tl.add(state, {
+        v: 1,
+        duration: 480,
+        ease: 'outCubic',
+        onUpdate() {
+          const p = state.v;
+          el.setAttribute('fill',   `rgba(${C.r},${C.g},${C.b},${p.toFixed(3)})`);
+          el.setAttribute('stroke', `rgba(${C.r},${C.g},${C.b},${((isDot ? 0.4 : 0.22) * (1 - p)).toFixed(3)})`);
+        },
+        onComplete() {
+          if (isDot) {
+            el.setAttribute('fill',         COLOR_ACCENT);
+            el.setAttribute('stroke',       COLOR_BG);
+            el.setAttribute('stroke-width', '5');
+          } else {
+            el.setAttribute('fill',   COLOR_PRIMARY);
+            el.setAttribute('stroke', COLOR_PRIMARY);
+            el.setAttribute('stroke-width', '2');
+          }
+        }
+      }, i === 0 ? '+=0' : `-=${480 - 50}`);
+    });
+
+    // Phase 3b: contract spacing + efek italic (skewX)
+    const contractState = { p: 0 };
+    tl.add(contractState, {
+      p: 1,
+      duration: 850,
+      ease: 'outQuart',
+      onUpdate() {
+        const p    = contractState.p;
+        const skew = SKEW_FINAL * p;
+        pathEls.forEach((el, i) => {
+          const xFinal = finalX[i] + (i === DOT_IDX ? DOT_SHIFT : 0);
+          const x = initX[i] + (xFinal - initX[i]) * p;
+          const s = i === DOT_IDX ? 0 : skew;
+          el.setAttribute('transform', `translate(${x}, ${GLYPH_VERTICAL_OFFSET}) ${i === DOT_IDX ? '' : `skewX(${s})`}`);
+        });
+        const wU = initTotalWU + (finalTotalWU - initTotalWU) * p;
+        applySize(textSvg, wU, SCALE); // Pass SCALE for home page
+      }
+    }, '+=0');
+
+    // Phase 4: grid out, nav + desc in
+    tl.add(gridSvg,      { opacity: [1,0], duration: 600, ease: 'outCubic' });
+    tl.add('#nav-links', { opacity: [0,1], translateY: [-20,0], duration: 700, ease: 'outCubic' }, '-=450');
+    tl.add('#desc-text', { opacity: [0,1], translateY: [20,0],  duration: 700, ease: 'outCubic' }, '-=550');
+  });
+</script>
