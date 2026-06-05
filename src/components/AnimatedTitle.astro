@@ -197,6 +197,32 @@ const gridSvgClasses = [
         return; // Skip animation timeline for non-home page
     }
 
+    // Skip full animation if already played in this session
+    if (sessionStorage.getItem('wingky-anim-played')) {
+        pathEls.forEach((el, i) => {
+            const xFinal = finalX[i] + (i === DOT_IDX ? DOT_SHIFT : 0);
+            const s = i === DOT_IDX ? 0 : SKEW_FINAL;
+            el.setAttribute('transform', `translate(${xFinal}, ${GLYPH_VERTICAL_OFFSET}) ${i === DOT_IDX ? '' : `skewX(${s})`}`);
+            const isDot = i === DOT_IDX;
+            if (isDot) {
+                el.setAttribute('fill', COLOR_ACCENT);
+                el.setAttribute('stroke', COLOR_BG);
+                el.setAttribute('stroke-width', '5');
+            } else {
+                el.setAttribute('fill', COLOR_PRIMARY);
+                el.setAttribute('stroke', COLOR_PRIMARY);
+                el.setAttribute('stroke-width', '2');
+            }
+        });
+        applySize(textSvg, finalTotalWU, SCALE);
+        gridSvg.style.opacity = '0';
+        const navLinks = document.getElementById('nav-links');
+        const descText = document.getElementById('desc-text');
+        if (navLinks) { navLinks.style.opacity = '1'; navLinks.style.transform = 'translateY(0)'; }
+        if (descText) { descText.style.opacity = '1'; descText.style.transform = 'translateY(0)'; }
+        return;
+    }
+
     // Path animation setup (only for home page)
     pathEls.forEach(el => {
       const len = el.getTotalLength ? el.getTotalLength() : 800;
@@ -331,6 +357,6 @@ const gridSvgClasses = [
     // Phase 4: grid out, nav + desc in
     tl.add(gridSvg,      { opacity: [1,0], duration: 600, ease: 'outCubic' });
     tl.add('#nav-links', { opacity: [0,1], translateY: [-20,0], duration: 700, ease: 'outCubic' }, '-=450');
-    tl.add('#desc-text', { opacity: [0,1], translateY: [20,0],  duration: 700, ease: 'outCubic' }, '-=550');
+    tl.add('#desc-text', { opacity: [0,1], translateY: [20,0],  duration: 700, ease: 'outCubic', onComplete() { sessionStorage.setItem('wingky-anim-played', '1'); } }, '-=550');
   });
 </script>
