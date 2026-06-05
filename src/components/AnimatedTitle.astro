@@ -287,14 +287,15 @@ const gridSvgClasses = [
       if (r.y < yMin) yMin = r.y;
       if (r.y + r.height > yMax) yMax = r.y + r.height;
     });
-    const margin = 3;
-    const BT = yMin - margin, BB = yMax + margin;
+    const gap = 12;
+    const BT = Math.round(Math.max(0, yMin - gap));
+    const BB = Math.round(yMax + gap);
     const BL = PAD / SCALE, BR = initTotalWU - PAD / SCALE;
-    const EXT = 40, BASELINE = FSU, XHEIGHT = BASELINE - FSU * 0.68;
+    const EXT = 40;
     const lineSpecs: { x1:number; y1:number; x2:number; y2:number }[] = [
       { x1: BL-EXT, y1: BT,       x2: BR+EXT, y2: BT       },
-      { x1: BL-EXT, y1: XHEIGHT,  x2: BR+EXT, y2: XHEIGHT  },
-      { x1: BL-EXT, y1: BASELINE, x2: BR+EXT, y2: BASELINE  },
+      { x1: BL-EXT, y1: yMin,  x2: BR+EXT, y2: yMin  },
+      { x1: BL-EXT, y1: yMax, x2: BR+EXT, y2: yMax },
       { x1: BL-EXT, y1: BB,       x2: BR+EXT, y2: BB        },
       { x1: BL, y1: BT-EXT, x2: BL, y2: BB+EXT },
       { x1: BR, y1: BT-EXT, x2: BR, y2: BB+EXT },
@@ -317,7 +318,8 @@ const gridSvgClasses = [
     });
     const tickPts: [number,number][] = [
       [BL,BT],[BR,BT],[BL,BB],[BR,BB],
-      [BL,BASELINE],[BR,BASELINE],
+      [BL,yMin],[BR,yMin],
+      [BL,yMax],[BR,yMax],
       [initTotalWU/2,BT],[initTotalWU/2,BB],
     ];
     const tickEls = tickPts.map(([tx,ty]) => {
