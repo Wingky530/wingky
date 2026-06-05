@@ -43,7 +43,7 @@ const gridSvgClasses = [
 
 {
   isHomePage ? (
-    <div id="title-wrapper" class:list={wrapperClasses}>
+    <div id="title-wrapper" class:list={wrapperClasses} style="view-transition-name: wingky-title">
       <svg id="grid-svg"
         class:list={gridSvgClasses}
         style="opacity:0;overflow:visible"
@@ -61,7 +61,7 @@ const gridSvgClasses = [
     </div>
   ) : (
     <a href="/">
-      <div id="title-wrapper" class:list={wrapperClasses}>
+      <div id="title-wrapper" class:list={wrapperClasses} style="view-transition-name: wingky-title">
         <svg id="grid-svg"
           class:list={gridSvgClasses}
           style="opacity:0;overflow:visible"
@@ -81,7 +81,7 @@ const gridSvgClasses = [
   )
 }
 
-<script client:load>
+<script>
   import { createTimeline } from 'animejs/timeline';
   import { stagger } from 'animejs/utils';
 
