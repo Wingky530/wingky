@@ -1,0 +1,401 @@
+---
+import opentype from 'opentype.js';
+import fs from 'node:fs';
+import path from 'node:path';
+
+interface Props {
+  text: string;
+  isHomePage: boolean;
+}
+
+const { text, isHomePage } = Astro.props;
+
+const FS = 130;
+const FSU = 130;
+
+const fontPath = path.resolve('./public/fonts/wingky.ttf');
+const fontBuffer = fs.readFileSync(fontPath);
+const font = opentype.parse(fontBuffer.buffer);
+const scale = FS / font.unitsPerEm;
+
+const glyphs = text.split('').map(char => {
+  const glyph = font.charToGlyph(char);
+  const advance = (glyph.advanceWidth ?? 0) * scale;
+  const opPath = glyph.getPath(0, FSU, FS);
+  const d = opPath.toPathData(3);
+  return { d, advance };
+});
+
+const glyphsJson = JSON.stringify(glyphs);
+const DOT_IDX = text.length - 1;
+
+// Desktop default dimensions (JS overrides for mobile)
+const initX_d: number[] = [];
+let ix_d = 20;
+glyphs.forEach((g, i) => {
+  initX_d.push(ix_d);
+  ix_d += g.advance + (i < text.length - 1 ? 40 : 0);
+});
+const initTotalWU_d = ix_d + 20;
+
+const finalX_d: number[] = [];
+let fx_d = 20;
+glyphs.forEach((g, i) => {
+  finalX_d.push(fx_d);
+  fx_d += g.advance + (i < text.length - 1 ? 1.5 : 0);
+});
+const finalTotalWU_d = fx_d + 20 + (-60);
+const SVG_HU_d = FSU * 1.4;
+
+const homeW = Math.round(initTotalWU_d);
+const homeH = Math.round(SVG_HU_d);
+const navW = Math.round(finalTotalWU_d * 0.18);
+const navH = Math.round(SVG_HU_d * 0.18);
+
+const wrapperClasses = isHomePage
+  ? ["relative flex items-center justify-center select-none"]
+  : ["flex items-center justify-center select-none"];
+const wrapperStyle = isHomePage
+  ? "view-transition-name: wingky-title"
+  : "view-transition-name: wingky-title; position: fixed; top: 24px; left: 24px; z-index: 20;";
+
+const gridSvgClasses = [
+  "pointer-events-none",
+  isHomePage ? "absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" : "hidden"
+];
+---
+
+{
+  isHomePage ? (
+    <a href="/" onclick="sessionStorage.removeItem('wingky-anim-played')"
+      style="text-decoration:none;color:inherit">
+      <div id="title-wrapper" class:list={wrapperClasses} style={wrapperStyle}>
+        <svg id="grid-svg"
+          class:list={gridSvgClasses}
+          style="opacity:0;overflow:visible"
+          width={homeW} height={homeH}
+          aria-hidden="true"></svg>
+
+        <svg id="text-svg"
+          data-glyphs={glyphsJson}
+          data-text={text}
+          data-is-home-page={String(isHomePage)}
+          class="pointer-events-none"
+          style="overflow:visible;display:block"
+          viewBox={`0 0 ${initTotalWU_d} ${SVG_HU_d}`}
+          width={homeW} height={homeH}
+          aria-hidden="true"></svg>
+
+        <h1 class="sr-only">{text}</h1>
+      </div>
+    </a>
+  ) : (
+    <a href="/">
+      <div id="title-wrapper" class:list={wrapperClasses} style={wrapperStyle}>
+        <svg id="grid-svg"
+          class:list={gridSvgClasses}
+          style="opacity:0;overflow:visible"
+          width={navW} height={navH}
+          aria-hidden="true"></svg>
+
+        <svg id="text-svg"
+          data-glyphs={glyphsJson}
+          data-text={text}
+          data-is-home-page={String(isHomePage)}
+          class="pointer-events-none"
+          style="overflow:visible;display:block"
+          viewBox={`0 0 ${finalTotalWU_d} ${SVG_HU_d}`}
+          width={navW} height={navH}
+          aria-hidden="true"></svg>
+
+        <h1 class="sr-only">{text}</h1>
+      </div>
+    </a>
+  )
+}
+
+<script>
+  import { createTimeline } from 'animejs/timeline';
+  import { stagger } from 'animejs/utils';
+
+  let pathEls: SVGPathElement[] = [];
+  let textSvg: SVGSVGElement | null = null;
+  let gridSvg: SVGSVGElement | null = null;
+  let finalX: number[] = [];
+  let finalTotalWU = 0;
+  let SVG_HU = 0;
+  let homeScale = 1;
+  let isHomePage = false;
+
+  function setHomeFinalState(s: number) {
+    if (!textSvg || !gridSvg || pathEls.length === 0) return;
+    const css = getComputedStyle(document.documentElement);
+    const P    = css.getPropertyValue('--color-primary').trim();
+    const A    = css.getPropertyValue('--color-accent').trim();
+    const BG   = css.getPropertyValue('--color-background').trim();
+    const DOT_IDX = (textSvg.getAttribute('data-text') ?? '').length - 1;
+
+    pathEls.forEach((el, i) => {
+      const xFinal = finalX[i] + (i === DOT_IDX ? -60 : 0);
+      const isDot = i === DOT_IDX;
+      el.setAttribute('transform', `translate(${xFinal}, -10) ${isDot ? '' : 'skewX(-12)'}`);
+      if (isDot) {
+        el.setAttribute('fill',    A);
+        el.setAttribute('stroke',  BG);
+        el.setAttribute('stroke-width', '5');
+      } else {
+        el.setAttribute('fill',    P);
+        el.setAttribute('stroke',  P);
+        el.setAttribute('stroke-width', '2');
+      }
+    });
+    textSvg.setAttribute('viewBox', `0 0 ${finalTotalWU} ${SVG_HU}`);
+    textSvg.setAttribute('width',  String(Math.round(finalTotalWU * s)));
+    textSvg.setAttribute('height', String(Math.round(SVG_HU * s)));
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    textSvg = document.getElementById('text-svg') as SVGSVGElement & HTMLElement;
+    gridSvg = document.getElementById('grid-svg') as SVGSVGElement & HTMLElement;
+    const glyphs: { d: string; advance: number }[] = JSON.parse(textSvg.getAttribute('data-glyphs')!);
+    const TEXT = textSvg.getAttribute('data-text')!;
+    isHomePage = textSvg.getAttribute('data-is-home-page') === 'true';
+    const DOT_IDX = TEXT.length - 1;
+
+    const cssVars = getComputedStyle(document.documentElement);
+    const COLOR_PRIMARY = cssVars.getPropertyValue('--color-primary').trim();
+    const COLOR_BG      = cssVars.getPropertyValue('--color-background').trim();
+    const COLOR_ACCENT  = cssVars.getPropertyValue('--color-accent').trim();
+
+    function hexToRgb(hex: string) {
+      const h = hex.replace('#', '');
+      return {
+        r: parseInt(h.slice(0, 2), 16),
+        g: parseInt(h.slice(2, 4), 16),
+        b: parseInt(h.slice(4, 6), 16),
+      };
+    }
+
+    const P  = hexToRgb(COLOR_PRIMARY);
+    const A  = hexToRgb(COLOR_ACCENT);
+    const BG = hexToRgb(COLOR_BG);
+
+    const isMobile  = window.innerWidth < 768;
+    const SCALE     = isMobile ? 0.50 : 1;
+    homeScale = SCALE;
+    const INIT_GAP  = isMobile ? 20 : 40;
+    const FINAL_GAP = isMobile ? 0.5  : 1.5;
+    const PAD       = 20;
+    const FSU       = 130;
+    const GLYPH_VERTICAL_OFFSET = -10;
+    const SKEW_FINAL = -12;
+    const DOT_SHIFT = -60;
+
+    const initX: number[] = [];
+    let ix = PAD / SCALE;
+    glyphs.forEach((g, i) => {
+      initX.push(ix);
+      ix += g.advance + (i < TEXT.length - 1 ? INIT_GAP / SCALE : 0);
+    });
+    const initTotalWU = ix + PAD / SCALE;
+
+    finalX = [];
+    let fx = PAD / SCALE;
+    glyphs.forEach((g, i) => {
+      finalX.push(fx);
+      fx += g.advance + (i < TEXT.length - 1 ? FINAL_GAP / SCALE : 0);
+    });
+    finalTotalWU = fx + PAD / SCALE;
+    finalTotalWU += DOT_SHIFT;
+
+    SVG_HU = FSU * 1.4;
+
+    const applySize = (svg: Element, wU: number, s: number) => {
+      svg.setAttribute('viewBox', `0 0 ${wU} ${SVG_HU}`);
+      svg.setAttribute('width',   String(Math.round(wU * s)));
+      svg.setAttribute('height',  String(Math.round(SVG_HU * s)));
+    };
+
+    // ── Create paths ──
+    pathEls = glyphs.map((g, i) => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const isDot = i === DOT_IDX;
+      el.setAttribute('d', g.d);
+      el.setAttribute('fill', 'transparent');
+      el.setAttribute('stroke', isDot
+        ? `rgba(${A.r},${A.g},${A.b},0.4)`
+        : `rgba(${P.r},${P.g},${P.b},0.22)`
+      );
+      el.setAttribute('stroke-width', isDot ? '4' : '3');
+      el.setAttribute('transform', `translate(${initX[i]}, ${GLYPH_VERTICAL_OFFSET})`);
+      textSvg!.appendChild(el);
+      return el;
+    });
+
+    if (!isHomePage) {
+      textSvg.style.opacity = '1';
+      const navScale = isMobile ? 0.15 : 0.18;
+      pathEls.forEach((el, i) => {
+        const xFinal = finalX[i] + (i === DOT_IDX ? DOT_SHIFT : 0);
+        const s = i === DOT_IDX ? 0 : SKEW_FINAL;
+        el.setAttribute('transform', `translate(${xFinal}, ${GLYPH_VERTICAL_OFFSET}) ${i === DOT_IDX ? '' : `skewX(${s})`}`);
+        const isDot = i === DOT_IDX;
+        if (isDot) {
+          el.setAttribute('fill',   COLOR_ACCENT);
+          el.setAttribute('stroke', COLOR_BG);
+          el.setAttribute('stroke-width', '5');
+        } else {
+          el.setAttribute('fill',   COLOR_PRIMARY);
+          el.setAttribute('stroke', COLOR_PRIMARY);
+          el.setAttribute('stroke-width', '2');
+        }
+      });
+      applySize(textSvg, finalTotalWU, navScale);
+      return;
+    }
+
+    applySize(textSvg, initTotalWU, SCALE);
+    applySize(gridSvg, initTotalWU, SCALE);
+
+    // ── Skip anim on non-reload nav if flag exists ──
+    const navEntry = performance.getEntriesByType?.('navigation')?.[0];
+    const shouldSkip = navEntry
+      ? navEntry.type !== 'reload' && sessionStorage.getItem('wingky-anim-played')
+      : !!sessionStorage.getItem('wingky-anim-played');
+    if (shouldSkip) {
+      setHomeFinalState(SCALE);
+      gridSvg.style.opacity = '0';
+      const navLinks = document.getElementById('nav-links');
+      const descText = document.getElementById('desc-text');
+      if (navLinks) { navLinks.style.opacity = '1'; navLinks.style.transform = 'translateY(0)'; }
+      if (descText) { descText.style.opacity = '1'; descText.style.transform = 'translateY(0)'; }
+      return;
+    }
+
+    // ── Stroke‑dash setup ──
+    pathEls.forEach(el => {
+      const len = el.getTotalLength ? el.getTotalLength() : 800;
+      el.style.strokeDasharray  = String(Math.ceil(len) + 2);
+      el.style.strokeDashoffset = String(Math.ceil(len) + 2);
+    });
+
+    // ── Grid lines ──
+    const BT = 3, BB = SVG_HU - 3;
+    const BL = PAD / SCALE, BR = initTotalWU - PAD / SCALE;
+    const EXT = 40, BASELINE = FSU, XHEIGHT = BASELINE - FSU * 0.68;
+    const lineSpecs: { x1:number; y1:number; x2:number; y2:number }[] = [
+      { x1: BL-EXT, y1: BT,       x2: BR+EXT, y2: BT       },
+      { x1: BL-EXT, y1: XHEIGHT,  x2: BR+EXT, y2: XHEIGHT  },
+      { x1: BL-EXT, y1: BASELINE, x2: BR+EXT, y2: BASELINE  },
+      { x1: BL-EXT, y1: BB,       x2: BR+EXT, y2: BB        },
+      { x1: BL, y1: BT-EXT, x2: BL, y2: BB+EXT },
+      { x1: BR, y1: BT-EXT, x2: BR, y2: BB+EXT },
+      { x1: initTotalWU/2, y1: BT-EXT*0.6, x2: initTotalWU/2, y2: BB+EXT*0.6 },
+    ];
+    glyphs.forEach((g, i) => {
+      const xStart = initX[i];
+      lineSpecs.push({ x1: xStart,             y1: BT-EXT, x2: xStart,             y2: BB+EXT });
+      lineSpecs.push({ x1: xStart + g.advance, y1: BT-EXT, x2: xStart + g.advance, y2: BB+EXT });
+    });
+    const lineEls = lineSpecs.map(s => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      el.setAttribute('x1', String(s.x1)); el.setAttribute('y1', String(s.y1));
+      el.setAttribute('x2', String(s.x2)); el.setAttribute('y2', String(s.y2));
+      el.setAttribute('stroke', `rgba(${P.r},${P.g},${P.b},0.13)`);
+      el.setAttribute('stroke-width', '0.8');
+      el.style.opacity = '0';
+      gridSvg!.appendChild(el);
+      return el;
+    });
+    const tickPts: [number,number][] = [
+      [BL,BT],[BR,BT],[BL,BB],[BR,BB],
+      [BL,BASELINE],[BR,BASELINE],
+      [initTotalWU/2,BT],[initTotalWU/2,BB],
+    ];
+    const tickEls = tickPts.map(([tx,ty]) => {
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      const sz = 7;
+      ([[tx-sz,ty,tx+sz,ty],[tx,ty-sz,tx,ty+sz]] as [number,number,number,number][]).forEach(([x1,y1,x2,y2]) => {
+        const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+        l.setAttribute('x1',String(x1)); l.setAttribute('y1',String(y1));
+        l.setAttribute('x2',String(x2)); l.setAttribute('y2',String(y2));
+        l.setAttribute('stroke', `rgba(${P.r},${P.g},${P.b},0.38)`);
+        l.setAttribute('stroke-width','1');
+        g.appendChild(l);
+      });
+      g.style.opacity = '0';
+      gridSvg!.appendChild(g);
+      return g;
+    });
+
+    // ── Timeline ──
+    const tl = createTimeline({ defaults: { ease: 'outExpo' }, autoplay: true });
+
+    tl.add(gridSvg, { opacity: [0,1], duration: 250, ease: 'linear' });
+    tl.add(lineEls, { opacity: [0,1], delay: stagger(40), duration: 350, ease: 'outCubic' }, '-=100');
+    tl.add(tickEls, { opacity: [0,1], delay: stagger(35), duration: 250, ease: 'outCubic' }, '-=200');
+    tl.add({},      { duration: 200 });
+
+    pathEls.forEach((el, i) => {
+      const len = parseFloat(el.style.strokeDasharray);
+      const dur = 350 + len * 0.14;
+      tl.add(el, {
+        strokeDashoffset: [len, 0],
+        duration: dur,
+        ease: 'inOutSine'
+      }, i === 0 ? '+=0' : `-=${dur * 0.52}`);
+    });
+    tl.add({}, { duration: 180 });
+
+    const fillStates = pathEls.map(() => ({ v: 0 }));
+    pathEls.forEach((el, i) => {
+      const state  = fillStates[i];
+      const isDot  = i === DOT_IDX;
+      const C      = isDot ? A : P;
+      tl.add(state, {
+        v: 1,
+        duration: 480,
+        ease: 'outCubic',
+        onUpdate() {
+          const p = state.v;
+          el.setAttribute('fill',   `rgba(${C.r},${C.g},${C.b},${p.toFixed(3)})`);
+          el.setAttribute('stroke', `rgba(${C.r},${C.g},${C.b},${((isDot ? 0.4 : 0.22) * (1 - p)).toFixed(3)})`);
+        },
+        onComplete() {
+          if (isDot) {
+            el.setAttribute('fill',   COLOR_ACCENT);
+            el.setAttribute('stroke', COLOR_BG);
+            el.setAttribute('stroke-width', '5');
+          } else {
+            el.setAttribute('fill',   COLOR_PRIMARY);
+            el.setAttribute('stroke', COLOR_PRIMARY);
+            el.setAttribute('stroke-width', '2');
+          }
+        }
+      }, i === 0 ? '+=0' : `-=${480 - 50}`);
+    });
+
+    const contractState = { p: 0 };
+    tl.add(contractState, {
+      p: 1,
+      duration: 850,
+      ease: 'outQuart',
+      onUpdate() {
+        const p    = contractState.p;
+        const skew = SKEW_FINAL * p;
+        pathEls.forEach((el, i) => {
+          const xFinal = finalX[i] + (i === DOT_IDX ? DOT_SHIFT : 0);
+          const x = initX[i] + (xFinal - initX[i]) * p;
+          const s = i === DOT_IDX ? 0 : skew;
+          el.setAttribute('transform', `translate(${x}, ${GLYPH_VERTICAL_OFFSET}) ${i === DOT_IDX ? '' : `skewX(${s})`}`);
+        });
+        const wU = initTotalWU + (finalTotalWU - initTotalWU) * p;
+        applySize(textSvg!, wU, SCALE);
+      }
+    }, '+=0');
+
+    tl.add(gridSvg,      { opacity: [1,0], duration: 600, ease: 'outCubic' });
+    tl.add('#nav-links', { opacity: [0,1], translateY: [-20,0], duration: 700, ease: 'outCubic' }, '-=450');
+    tl.add('#desc-text', { opacity: [0,1], translateY: [20,0],  duration: 700, ease: 'outCubic', onComplete() { sessionStorage.setItem('wingky-anim-played', '1'); } }, '-=550');
+  });
+</script>

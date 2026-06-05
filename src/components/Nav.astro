@@ -1,8 +1,9 @@
-<nav class="fixed top-0 left-0 right-0 flex items-center justify-between p-6 z-10 max-w-5xl mx-auto w-full">
-  <div class="text-lg font-bold">
-    <a href="/" class="hover:text-muted transition-colors duration-200">wingky</a>
-  </div>
-  <ul class="flex space-x-8 text-sm font-medium text-muted">
+---
+import AnimatedTitle from './AnimatedTitle.astro';
+---
+<nav class="fixed top-0 left-0 right-0 z-10 flex items-center justify-end max-w-5xl mx-auto w-full">
+  <AnimatedTitle isHomePage={false} text="wingky." />
+  <ul class="flex space-x-8 p-6 text-sm font-medium text-muted">
     <li>
       <a href="/projects" class="hover:text-primary transition-colors duration-200">Projects</a>
     </li>
