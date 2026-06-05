@@ -67,25 +67,28 @@ const gridSvgClasses = [
 
 {
   isHomePage ? (
-    <div id="title-wrapper" class:list={wrapperClasses} style={wrapperStyle}>
-      <svg id="grid-svg"
-        class:list={gridSvgClasses}
-        style="opacity:0;overflow:visible"
-        width={homeW} height={homeH}
-        aria-hidden="true"></svg>
+    <a href="/" onclick="sessionStorage.removeItem('wingky-anim-played')"
+      style="text-decoration:none;color:inherit">
+      <div id="title-wrapper" class:list={wrapperClasses} style={wrapperStyle}>
+        <svg id="grid-svg"
+          class:list={gridSvgClasses}
+          style="opacity:0;overflow:visible"
+          width={homeW} height={homeH}
+          aria-hidden="true"></svg>
 
-      <svg id="text-svg"
-        data-glyphs={glyphsJson}
-        data-text={text}
-        data-is-home-page={String(isHomePage)}
-        class="pointer-events-none"
-        style="overflow:visible;display:block"
-        viewBox={`0 0 ${initTotalWU_d} ${SVG_HU_d}`}
-        width={homeW} height={homeH}
-        aria-hidden="true"></svg>
+        <svg id="text-svg"
+          data-glyphs={glyphsJson}
+          data-text={text}
+          data-is-home-page={String(isHomePage)}
+          class="pointer-events-none"
+          style="overflow:visible;display:block"
+          viewBox={`0 0 ${initTotalWU_d} ${SVG_HU_d}`}
+          width={homeW} height={homeH}
+          aria-hidden="true"></svg>
 
-      <h1 class="sr-only">{text}</h1>
-    </div>
+        <h1 class="sr-only">{text}</h1>
+      </div>
+    </a>
   ) : (
     <a href="/">
       <div id="title-wrapper" class:list={wrapperClasses} style={wrapperStyle}>
