@@ -1,3 +1,35 @@
+/*
+ * AnimatedTitle.astro
+ *
+ * Renders the "Wingky" logo as SVG paths derived from a TTF font via opentype.js.
+ * On the home page it plays a multi-phase entry animation; on subpages (Nav) it
+ * renders the compact final state immediately.
+ *
+ * ── Frontmatter (SSR) ──
+ * - Glyph loading & path generation  Parse font, extract SVG path `d` for each
+ *                                     character, append `Z` to close paths.
+ * - Desktop dimension pre-compute     Calculate initial (spread) and final (compact)
+ *                                     glyph X positions plus SVG viewBox sizes.
+ * - Responsive classes/styles         Home: centered; Nav: fixed top-left 24px.
+ *
+ * ── Client script blocks ──
+ * - hexToRgb(hex)                     Convert "#rrggbb" → {r,g,b}.
+ * - applySize(svg, wU, s)             Set viewBox + scaled width/height on an SVG.
+ * - setHomeFinalState(s)              Jump glyphs to final compact state (skip-anim).
+ * - Path creation                     Build <path> elements, initial transparent fill.
+ * - Non-homepage early return         Render compact nav state immediately & exit.
+ * - Animation skip logic              Detect reload vs navigation via
+ *                                     PerformanceNavigationTiming + sessionStorage.
+ * - Grid line generation              Compute bbox, inner/outer grid lines, random
+ *                                     draw direction (LTR/RTL, TTB/BTT).
+ * - Tick mark generation              Crosshair markers at key intersections.
+ * - Timeline sequences:
+ *   1. Grid fade-in + stroke-dash draw
+ *   2. Stroke-draw animation (per-path +10 tolerance)
+ *   3. Fill animation (transparent → solid)
+ *   4. Contract + skew animation (spread → compact)
+ *   5. Grid fade-out + nav-links / desc-text reveal
+ */
 ---
 import opentype from 'opentype.js';
 import fs from 'node:fs';
@@ -279,7 +311,10 @@ const gridSvgClasses = [
       return;
     }
 
-    // ── Grid lines ──
+        // ── Grid lines ──
+    const isHorizLTR = Math.random() > 0.5;
+    const isVertTTB = Math.random() > 0.5;
+
     let yMin = Infinity, yMax = -Infinity;
     pathEls.forEach(el => {
       const r = el.getBBox();
@@ -313,6 +348,21 @@ const gridSvgClasses = [
       el.setAttribute('stroke', `rgba(${P.r},${P.g},${P.b},0.13)`);
       el.setAttribute('stroke-width', '0.8');
       el.style.opacity = '0';
+
+      const isHoriz = s.y1 === s.y2;
+      const length = isHoriz ? Math.abs(s.x2 - s.x1) : Math.abs(s.y2 - s.y1);
+      el.setAttribute('stroke-dasharray', String(length));
+
+      let initialOffset = length;
+      if (isHoriz && !isHorizLTR) {
+        initialOffset = -length;
+      } else if (!isHoriz && !isVertTTB) {
+        initialOffset = -length;
+      }
+
+      el.setAttribute('stroke-dashoffset', String(initialOffset));
+      el.dataset.initialOffset = String(initialOffset);
+
       gridSvg!.appendChild(el);
       return el;
     });
@@ -341,9 +391,16 @@ const gridSvgClasses = [
     const tl = createTimeline({ defaults: { ease: 'outExpo' }, autoplay: true });
 
     tl.add(gridSvg, { opacity: [0,1], duration: 250, ease: 'linear' });
-    tl.add(lineEls, { opacity: [0,1], delay: stagger(40), duration: 350, ease: 'outCubic' }, '-=100');
+    tl.add(lineEls, { 
+      opacity: [0,1], 
+      strokeDashoffset: (el) => [parseFloat(el.dataset.initialOffset || '0'), 0],
+      delay: stagger(40), 
+      duration: 600, 
+      ease: 'outCubic' 
+    }, '-=100');
     tl.add(tickEls, { opacity: [0,1], delay: stagger(35), duration: 250, ease: 'outCubic' }, '-=200');
     tl.add({},      { duration: 200 });
+
 
     // ── Stroke-draw animation ──
     tl.add({}, { duration: 200 });
