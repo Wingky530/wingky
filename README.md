@@ -25,10 +25,6 @@ An open-source and free web toolkit — a growing suite of developer utilities s
 
 [View on GitHub →](https://github.com/Wingky530/viewport)
 
-## Design
-
-Inspired by chronark.com. Light cream background (#EBEBDF) with navy (#191265) accents. Canvas particle animations, glow lines, and text outline effects.
-
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.

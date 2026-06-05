@@ -1,28 +1,16 @@
 ---
 import Canvas from '../components/Canvas.astro';
 import Layout from '../layouts/Layout.astro';
-import opentype from 'opentype.js';
-import fs from 'node:fs';
-import path from 'node:path';
+import glyphsData from '../data/glyphs.json';
 
 const TEXT = 'wingky.';
-const FS = 130;
-const FSU = 130;
 
-const fontPath = path.resolve('./public/fonts/wingky.ttf');
-const fontBuffer = fs.readFileSync(fontPath);
-const font = opentype.parse(fontBuffer.buffer);
-const scale = FS / font.unitsPerEm;
+const FS = 130; // Kept for consistency, actual value comes from gen-glyphs.mjs
+const FSU = 130; // Kept for consistency
 
-const glyphs = TEXT.split('').map(char => {
-  const glyph = font.charToGlyph(char);
-  const advance = (glyph.advanceWidth ?? 0) * scale;
-  const opPath = glyph.getPath(0, FSU, FS);
-  const d = opPath.toPathData(3);
-  return { d, advance };
-});
+const glyphs = glyphsData;
 
-const glyphsJson = JSON.stringify(glyphs);
+const glyphsJson = JSON.stringify(glyphsData);
 ---
 <Layout>
   <Canvas />
