@@ -106,6 +106,7 @@ const glyphsJson = JSON.stringify(glyphs);
     const FSU       = 130;
     const GLYPH_VERTICAL_OFFSET = -10;
     const SKEW_FINAL = -12; // derajat italic di akhir animasi
+    const DOT_SHIFT = -15; // dot digeser lebih kiri dari posisi final normal
 
     // ── Posisi X huruf ────────────────────────────────────────────────
     const initX: number[] = [];
@@ -270,8 +271,10 @@ const glyphsJson = JSON.stringify(glyphs);
         const p    = contractState.p;
         const skew = SKEW_FINAL * p;
         pathEls.forEach((el, i) => {
-          const x = initX[i] + (finalX[i] - initX[i]) * p;
-          el.setAttribute('transform', `translate(${x}, ${GLYPH_VERTICAL_OFFSET}) skewX(${skew})`);
+          const xFinal = finalX[i] + (i === DOT_IDX ? DOT_SHIFT : 0);
+          const x = initX[i] + (xFinal - initX[i]) * p;
+          const s = i === DOT_IDX ? 0 : skew;
+          el.setAttribute('transform', `translate(${x}, ${GLYPH_VERTICAL_OFFSET}) skewX(${s})`);
         });
         const wU = initTotalWU + (finalTotalWU - initTotalWU) * p;
         applySize(textSvg, wU);
