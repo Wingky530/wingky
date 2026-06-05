@@ -198,8 +198,12 @@ const gridSvgClasses = [
     }
 
     // Skip animation on navigate/back_forward if already played (only reload replays)
+    // Fallback: if PerformanceNavigationTiming API unavailable, play once per tab session
     const navEntry = performance.getEntriesByType?.('navigation')?.[0];
-    if (navEntry?.type !== 'reload' && sessionStorage.getItem('wingky-anim-played')) {
+    const shouldSkip = navEntry
+      ? navEntry.type !== 'reload' && sessionStorage.getItem('wingky-anim-played')
+      : !!sessionStorage.getItem('wingky-anim-played');
+    if (shouldSkip) {
         pathEls.forEach((el, i) => {
             const xFinal = finalX[i] + (i === DOT_IDX ? DOT_SHIFT : 0);
             const s = i === DOT_IDX ? 0 : SKEW_FINAL;
