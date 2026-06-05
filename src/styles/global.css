@@ -70,11 +70,3 @@ canvas {
 @view-transition {
   navigation: auto;
 }
-
-::view-transition-old(wingky-title) {
-  animation-duration: 0.4s;
-}
-
-::view-transition-new(wingky-title) {
-  animation-duration: 0.35s;
-}

@@ -32,7 +32,7 @@ const glyphsJson = JSON.stringify(glyphs);
 // CSS classes for positioning based on isHomePage
 const wrapperClasses = [
   "relative flex items-center justify-center select-none",
-  isHomePage ? "" : "absolute top-6 left-6 z-20"
+  isHomePage ? "" : "fixed top-6 left-6 z-20"
 ];
 
 const gridSvgClasses = [
@@ -170,17 +170,16 @@ const gridSvgClasses = [
 
     if (!isHomePage) {
         textSvg.style.opacity = '1';
-        const finalTitleScale = isMobile ? 0.25 : 0.35;
+        const navScale = isMobile ? 0.15 : 0.18;
 
-        // Initialize to final state
+        // Initialize to final state (full-scale positions in viewBox)
         pathEls.forEach((el, i) => {
             const xFinal = finalX[i] + (i === DOT_IDX ? DOT_SHIFT : 0);
             const skew = SKEW_FINAL;
             const s = i === DOT_IDX ? 0 : skew;
-            el.setAttribute('transform', `translate(${xFinal * finalTitleScale}, ${GLYPH_VERTICAL_OFFSET * finalTitleScale}) ${i === DOT_IDX ? '' : `skewX(${s})`}`);
+            el.setAttribute('transform', `translate(${xFinal}, ${GLYPH_VERTICAL_OFFSET}) ${i === DOT_IDX ? '' : `skewX(${s})`}`);
             
             const isDot  = i === DOT_IDX;
-            const C      = isDot ? A : P;
             if (isDot) {
                 el.setAttribute('fill',         COLOR_ACCENT);
                 el.setAttribute('stroke',       COLOR_BG);
@@ -192,7 +191,7 @@ const gridSvgClasses = [
             }
         });
         
-        applySize(textSvg, finalTotalWU, finalTitleScale); // Use finalTitleScale for overall SVG scaling
+        applySize(textSvg, finalTotalWU, navScale);
         return; // Skip animation timeline for non-home page
     }
 
