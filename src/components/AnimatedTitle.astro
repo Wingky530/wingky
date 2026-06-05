@@ -138,7 +138,7 @@ const gridSvgClasses = [
     pathEls.forEach((el, i) => {
       const xFinal = finalX[i] + (i === DOT_IDX ? -60 : 0);
       const isDot = i === DOT_IDX;
-      el.setAttribute('transform', `translate(${xFinal}, -10) ${isDot ? '' : 'skewX(-12)'}`);
+      el.setAttribute('transform', `translate(${xFinal}, 0) ${isDot ? '' : 'skewX(-12)'}`);
       if (isDot) {
         el.setAttribute('fill',    A);
         el.setAttribute('stroke',  BG);
@@ -187,7 +187,7 @@ const gridSvgClasses = [
     const FINAL_GAP = isMobile ? 0.5  : 1.5;
     const PAD       = 20;
     const FSU       = 130;
-    const GLYPH_VERTICAL_OFFSET = -10;
+    const GLYPH_VERTICAL_OFFSET = 0;
     const SKEW_FINAL = -12;
     const DOT_SHIFT = -60;
 
@@ -274,10 +274,8 @@ const gridSvgClasses = [
 
     // ── Stroke‑dash setup ──
     pathEls.forEach(el => {
-      const len = el.getTotalLength ? el.getTotalLength() : 800;
-      const dash = Math.ceil(len) + 50;
-      el.setAttribute('stroke-dasharray', String(dash));
-      el.setAttribute('stroke-dashoffset', String(dash));
+      el.setAttribute('stroke-dasharray', '5000');
+      el.setAttribute('stroke-dashoffset', '5000');
     });
 
     // ── Grid lines ──
@@ -287,15 +285,17 @@ const gridSvgClasses = [
       if (r.y < yMin) yMin = r.y;
       if (r.y + r.height > yMax) yMax = r.y + r.height;
     });
-    const gap = 12;
-    const BT = Math.round(Math.max(0, yMin - gap));
-    const BB = Math.round(yMax + gap);
+    const innerTop = Math.round(yMin + 27);
+    const innerBottom = Math.round(yMax - 27);
+    const gap = 30;
+    const BT = Math.round(Math.max(0, innerTop - gap));
+    const BB = Math.round(innerBottom + gap);
     const BL = PAD / SCALE, BR = initTotalWU - PAD / SCALE;
     const EXT = 40;
     const lineSpecs: { x1:number; y1:number; x2:number; y2:number }[] = [
       { x1: BL-EXT, y1: BT,       x2: BR+EXT, y2: BT       },
-      { x1: BL-EXT, y1: yMin,  x2: BR+EXT, y2: yMin  },
-      { x1: BL-EXT, y1: yMax, x2: BR+EXT, y2: yMax },
+      { x1: BL-EXT, y1: innerTop,  x2: BR+EXT, y2: innerTop  },
+      { x1: BL-EXT, y1: innerBottom, x2: BR+EXT, y2: innerBottom },
       { x1: BL-EXT, y1: BB,       x2: BR+EXT, y2: BB        },
       { x1: BL, y1: BT-EXT, x2: BL, y2: BB+EXT },
       { x1: BR, y1: BT-EXT, x2: BR, y2: BB+EXT },
@@ -318,8 +318,8 @@ const gridSvgClasses = [
     });
     const tickPts: [number,number][] = [
       [BL,BT],[BR,BT],[BL,BB],[BR,BB],
-      [BL,yMin],[BR,yMin],
-      [BL,yMax],[BR,yMax],
+      [BL,innerTop],[BR,innerTop],
+      [BL,innerBottom],[BR,innerBottom],
       [initTotalWU/2,BT],[initTotalWU/2,BB],
     ];
     const tickEls = tickPts.map(([tx,ty]) => {
@@ -347,10 +347,10 @@ const gridSvgClasses = [
     tl.add({},      { duration: 200 });
 
     pathEls.forEach((el, i) => {
-      const len = parseFloat(el.getAttribute('stroke-dasharray') || '800');
-      const dur = 350 + len * 0.14;
+      const actualLen = Math.max(el.getTotalLength ? el.getTotalLength() : 1500, 100);
+      const dur = 350 + actualLen * 0.14;
       tl.add(el, {
-        strokeDashoffset: [len, 0],
+        strokeDashoffset: [5000, 5000 - actualLen],
         duration: dur,
         ease: 'inOutSine'
       }, i === 0 ? '+=0' : `-=${dur * 0.52}`);
