@@ -6,10 +6,13 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "predev": "node scripts/gen-glyphs.mjs",
+    "prebuild": "node scripts/gen-glyphs.mjs",
+    "dev": "NODE_OPTIONS=\"--max-old-space-size=384\" astro dev",
+  "build": "astro build",
+  "preview": "astro preview",
+    "astro": "astro",
+    "preview-local": "astro build && astro preview"
   },
   "dependencies": {
     "@astrojs/react": "^4.0.0",
