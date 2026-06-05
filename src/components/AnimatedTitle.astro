@@ -277,7 +277,7 @@ const gridSvgClasses = [
       const themeToggle = document.getElementById('theme-toggle');
       if (navLinks) { navLinks.style.opacity = '1'; navLinks.style.transform = 'translateY(0)'; }
       if (descText) { descText.style.opacity = '1'; descText.style.transform = 'translateY(0)'; }
-      if (themeToggle) themeToggle.style.opacity = '1';
+      if (themeToggle) { themeToggle.style.opacity = '1'; themeToggle.style.pointerEvents = 'auto'; }
       return;
     }
 
@@ -438,7 +438,7 @@ const gridSvgClasses = [
 
     tl.add(gridSvg,      { opacity: [1,0], duration: 400, ease: 'outCubic' });
     tl.add('#nav-links', { opacity: [0,1], translateY: [-20,0], duration: 500, ease: 'outCubic' }, '-=250');
-    tl.add('#theme-toggle', { opacity: [0,1], duration: 400, ease: 'outCubic' }, '-=350');
+    tl.add('#theme-toggle', { opacity: [0,1], duration: 400, ease: 'outCubic', onComplete() { const el = document.getElementById('theme-toggle'); if (el) el.style.pointerEvents = 'auto'; } }, '-=350');
     tl.add('#desc-text', { opacity: [0,1], translateY: [20,0],  duration: 500, ease: 'outCubic', onComplete() { sessionStorage.setItem('wingky-anim-played', '1'); } }, '-=250');
   });
 

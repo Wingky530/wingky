@@ -64,12 +64,22 @@
 
   // Listen for ripple trigger from ThemeToggle
   window.addEventListener('theme-ripple', ((e: CustomEvent) => {
-    const { x, y, nextTheme } = e.detail;
+    const { x, y, nextTheme, currentTheme } = e.detail;
     const cells = document.querySelectorAll('[data-ripple-cell]');
     if (!cells.length) return;
 
     // Warna ripple = primary tema berikutnya (kontras terhadap overlay bg)
     const flashColor = nextTheme === 'dark' ? '235,235,223' : '37,36,34';
+
+    // Hitung jarak max untuk invert delay
+    const maxDist = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    // Dark mode (white hole) → ripple keluar dari tombol
+    // Light mode (black hole) → ripple masuk ke tombol
+    const isOutward = currentTheme === 'dark';
 
     animate(cells, {
       backgroundColor: [`rgba(${flashColor},0)`, `rgba(${flashColor},1)`, `rgba(${flashColor},0)`],
@@ -80,7 +90,8 @@
         const cr = el.getBoundingClientRect();
         const dx = cr.left + cr.width / 2 - x;
         const dy = cr.top + cr.height / 2 - y;
-        return Math.hypot(dx, dy) * 0.8;
+        const dist = Math.hypot(dx, dy);
+        return isOutward ? dist * 0.8 : (maxDist - dist) * 0.8;
       },
     });
   }) as EventListener);

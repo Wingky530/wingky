@@ -16,13 +16,10 @@
 ---
 <button id="theme-toggle" aria-label="Toggle theme">
   <svg id="toggle-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <!-- Accretion disk (event horizon ring) -->
-    <ellipse cx="12" cy="12" rx="10" ry="4" class="hole-disk" />
+    <!-- Accretion disk (event horizon) -->
+    <ellipse cx="12" cy="12" rx="10" ry="3" class="hole-disk" />
     <!-- Black hole core (singularity) -->
-    <circle cx="12" cy="12" r="4.5" class="hole-core" />
-    <!-- Gravitational lensing arcs -->
-    <path d="M4 12c2-3 5-5 8-5" class="hole-arc" />
-    <path d="M20 12c-2 3-5 5-8 5" class="hole-arc" />
+    <circle cx="12" cy="12" r="4" class="hole-core" />
   </svg>
 </button>
 
@@ -46,6 +43,8 @@
     justify-content: center;
     outline: none;
     transition: transform 0.2s ease;
+    opacity: 0;
+    pointer-events: none;
   }
   #theme-toggle:hover {
     transform: translateX(-50%) scale(1.15);
@@ -55,7 +54,18 @@
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Dark mode: white hole (light, emitting) */
+  :global(.hole-disk) {
+    transform-origin: 12px 12px;
+    transform: rotate(-45deg);
+    animation: pulse-disk 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-disk {
+    0%, 100% { ry: 3; }
+    50% { ry: 1.5; }
+  }
+
+  /* Dark mode: white hole (outline, light color) */
   :global([data-theme="dark"] .hole-disk) {
     fill: none;
     stroke: var(--color-primary);
@@ -63,17 +73,12 @@
     opacity: 0.7;
   }
   :global([data-theme="dark"] .hole-core) {
-    fill: var(--color-primary);
-  }
-  :global([data-theme="dark"] .hole-arc) {
-    stroke: var(--color-primary);
-    stroke-width: 1;
-    stroke-linecap: round;
     fill: none;
-    opacity: 0.5;
+    stroke: var(--color-primary);
+    stroke-width: 2;
   }
 
-  /* Light mode: black hole (dark, absorbing) */
+  /* Light mode: black hole (filled, dark color) */
   :global([data-theme="light"] .hole-disk) {
     fill: none;
     stroke: var(--color-primary);
@@ -81,14 +86,9 @@
     opacity: 0.7;
   }
   :global([data-theme="light"] .hole-core) {
-    fill: var(--color-primary);
-  }
-  :global([data-theme="light"] .hole-arc) {
-    stroke: var(--color-primary);
-    stroke-width: 1;
-    stroke-linecap: round;
     fill: none;
-    opacity: 0.5;
+    stroke: var(--color-primary);
+    stroke-width: 2;
   }
 
   /* Overlay reveal */
@@ -139,6 +139,7 @@
     const y = rect.top + rect.height / 2;
 
     const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    const origTheme = currentTheme;
     const nextBg = nextTheme === 'dark' ? BG_DARK : BG_LIGHT;
     const [r, g, b] = hexToRgb(nextBg);
 
@@ -156,23 +157,37 @@
     }
 
     // Overlay reveal via clip-path
+    // Dark (white hole) → expand outward; Light (black hole) → shrink inward
+    const isOutward = currentTheme === 'dark';
+    const overlayColor = isOutward ? nextBg : (currentTheme === 'dark' ? BG_DARK : BG_LIGHT);
     if (revealEl) {
       revealEl.style.transition = 'none';
-      revealEl.style.clipPath = `circle(0px at ${x}px ${y}px)`;
-      revealEl.style.backgroundColor = nextBg;
+      revealEl.style.backgroundColor = overlayColor;
       revealEl.style.opacity = '1';
-      void revealEl.offsetWidth;
-      revealEl.style.transition = 'clip-path 1600ms cubic-bezier(0.4, 0, 0.2, 1)';
-      revealEl.style.clipPath = `circle(${maxR}px at ${x}px ${y}px)`;
+      if (isOutward) {
+        revealEl.style.clipPath = `circle(0px at ${x}px ${y}px)`;
+        void revealEl.offsetWidth;
+        revealEl.style.transition = 'clip-path 1600ms cubic-bezier(0.4, 0, 0.2, 1)';
+        revealEl.style.clipPath = `circle(${maxR}px at ${x}px ${y}px)`;
+      } else {
+        // Inward: overlay starts full, theme swaps immediately behind it, then shrinks to reveal
+        applyTheme(nextTheme);
+        revealEl.style.clipPath = `circle(${maxR}px at ${x}px ${y}px)`;
+        void revealEl.offsetWidth;
+        revealEl.style.transition = 'clip-path 1600ms cubic-bezier(0.4, 0, 0.2, 1)';
+        revealEl.style.clipPath = `circle(0px at ${x}px ${y}px)`;
+      }
     }
 
     // Grid ripple (dispatch to GridRipple component)
     window.dispatchEvent(new CustomEvent('theme-ripple', {
-      detail: { x, y, nextTheme }
+      detail: { x, y, nextTheme, currentTheme: origTheme }
     }));
 
-    // Swap tema dengan delay — overlay sudah menutupi saat ini
-    setTimeout(() => applyTheme(nextTheme), 800);
+    // Swap tema — outward: delay; inward: already applied above
+    if (isOutward) {
+      setTimeout(() => applyTheme(nextTheme), 800);
+    }
 
     // Fade out overlay setelah reveal selesai — mengungkap konten berwarna baru
     setTimeout(() => {
