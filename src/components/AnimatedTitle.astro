@@ -197,10 +197,9 @@ const gridSvgClasses = [
         return; // Skip animation timeline for non-home page
     }
 
-    // Skip full animation on back/forward navigation if already played
+    // Skip animation on navigate/back_forward if already played (only reload replays)
     const navEntry = performance.getEntriesByType?.('navigation')?.[0];
-    const isBackForward = navEntry?.type === 'back_forward';
-    if (isBackForward && sessionStorage.getItem('wingky-anim-played')) {
+    if (navEntry?.type !== 'reload' && sessionStorage.getItem('wingky-anim-played')) {
         pathEls.forEach((el, i) => {
             const xFinal = finalX[i] + (i === DOT_IDX ? DOT_SHIFT : 0);
             const s = i === DOT_IDX ? 0 : SKEW_FINAL;
