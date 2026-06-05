@@ -275,12 +275,20 @@ const gridSvgClasses = [
     // ── Stroke‑dash setup ──
     pathEls.forEach(el => {
       const len = el.getTotalLength ? el.getTotalLength() : 800;
-      el.style.strokeDasharray  = String(Math.ceil(len) + 2);
-      el.style.strokeDashoffset = String(Math.ceil(len) + 2);
+      const dash = Math.ceil(len) + 50;
+      el.setAttribute('stroke-dasharray', String(dash));
+      el.setAttribute('stroke-dashoffset', String(dash));
     });
 
     // ── Grid lines ──
-    const BT = 3, BB = SVG_HU - 3;
+    let yMin = Infinity, yMax = -Infinity;
+    pathEls.forEach(el => {
+      const r = el.getBBox();
+      if (r.y < yMin) yMin = r.y;
+      if (r.y + r.height > yMax) yMax = r.y + r.height;
+    });
+    const margin = 3;
+    const BT = yMin - margin, BB = yMax + margin;
     const BL = PAD / SCALE, BR = initTotalWU - PAD / SCALE;
     const EXT = 40, BASELINE = FSU, XHEIGHT = BASELINE - FSU * 0.68;
     const lineSpecs: { x1:number; y1:number; x2:number; y2:number }[] = [
@@ -337,7 +345,7 @@ const gridSvgClasses = [
     tl.add({},      { duration: 200 });
 
     pathEls.forEach((el, i) => {
-      const len = parseFloat(el.style.strokeDasharray);
+      const len = parseFloat(el.getAttribute('stroke-dasharray') || '800');
       const dur = 350 + len * 0.14;
       tl.add(el, {
         strokeDashoffset: [len, 0],
