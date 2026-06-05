@@ -30,10 +30,12 @@ const glyphs = text.split('').map(char => {
 const glyphsJson = JSON.stringify(glyphs);
 
 // CSS classes for positioning based on isHomePage
-const wrapperClasses = [
-  "relative flex items-center justify-center select-none",
-  isHomePage ? "" : "fixed top-6 left-6 z-20"
-];
+const wrapperClasses = isHomePage
+  ? ["relative flex items-center justify-center select-none"]
+  : ["flex items-center justify-center select-none"];
+const wrapperStyle = isHomePage
+  ? "view-transition-name: wingky-title"
+  : "view-transition-name: wingky-title; position: fixed; top: 24px; left: 24px; z-index: 20;";
 
 const gridSvgClasses = [
   "pointer-events-none",
@@ -43,7 +45,7 @@ const gridSvgClasses = [
 
 {
   isHomePage ? (
-    <div id="title-wrapper" class:list={wrapperClasses} style="view-transition-name: wingky-title">
+    <div id="title-wrapper" class:list={wrapperClasses} style={wrapperStyle}>
       <svg id="grid-svg"
         class:list={gridSvgClasses}
         style="opacity:0;overflow:visible"
@@ -61,7 +63,7 @@ const gridSvgClasses = [
     </div>
   ) : (
     <a href="/">
-      <div id="title-wrapper" class:list={wrapperClasses} style="view-transition-name: wingky-title">
+      <div id="title-wrapper" class:list={wrapperClasses} style={wrapperStyle}>
         <svg id="grid-svg"
           class:list={gridSvgClasses}
           style="opacity:0;overflow:visible"
