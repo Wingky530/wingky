@@ -22,9 +22,16 @@ const glyphs = text.split('').map(char => {
   const glyph = font.charToGlyph(char);
   const advance = (glyph.advanceWidth ?? 0) * scale;
   const opPath = glyph.getPath(0, FSU, FS);
-  const d = opPath.toPathData(3);
+  let d = opPath.toPathData(3);
+
+  // Ensure the path is explicitly closed
+  if (!d.endsWith('Z') && !d.endsWith('z')) {
+    d += ' Z';
+  }
+
   return { d, advance };
 });
+
 
 const glyphsJson = JSON.stringify(glyphs);
 const DOT_IDX = text.length - 1;
@@ -272,12 +279,6 @@ const gridSvgClasses = [
       return;
     }
 
-    // ── Stroke‑dash setup ──
-    pathEls.forEach(el => {
-      el.setAttribute('stroke-dasharray', '5000');
-      el.setAttribute('stroke-dashoffset', '5000');
-    });
-
     // ── Grid lines ──
     let yMin = Infinity, yMax = -Infinity;
     pathEls.forEach(el => {
@@ -299,7 +300,6 @@ const gridSvgClasses = [
       { x1: BL-EXT, y1: BB,       x2: BR+EXT, y2: BB        },
       { x1: BL, y1: BT-EXT, x2: BL, y2: BB+EXT },
       { x1: BR, y1: BT-EXT, x2: BR, y2: BB+EXT },
-      { x1: initTotalWU/2, y1: BT-EXT*0.6, x2: initTotalWU/2, y2: BB+EXT*0.6 },
     ];
     glyphs.forEach((g, i) => {
       const xStart = initX[i];
@@ -320,7 +320,6 @@ const gridSvgClasses = [
       [BL,BT],[BR,BT],[BL,BB],[BR,BB],
       [BL,innerTop],[BR,innerTop],
       [BL,innerBottom],[BR,innerBottom],
-      [initTotalWU/2,BT],[initTotalWU/2,BB],
     ];
     const tickEls = tickPts.map(([tx,ty]) => {
       const g = document.createElementNS('http://www.w3.org/2000/svg','g');
@@ -346,16 +345,29 @@ const gridSvgClasses = [
     tl.add(tickEls, { opacity: [0,1], delay: stagger(35), duration: 250, ease: 'outCubic' }, '-=200');
     tl.add({},      { duration: 200 });
 
-    pathEls.forEach((el, i) => {
-      const actualLen = Math.max(el.getTotalLength ? el.getTotalLength() : 1500, 100);
-      const dur = 350 + actualLen * 0.14;
-      tl.add(el, {
-        strokeDashoffset: [5000, 5000 - actualLen],
-        duration: dur,
-        ease: 'inOutSine'
-      }, i === 0 ? '+=0' : `-=${dur * 0.52}`);
-    });
-    tl.add({}, { duration: 180 });
+    // ── Stroke-draw animation ──
+    tl.add({}, { duration: 200 });
+
+pathEls.forEach((el, i) => {
+  // Add +10 tolerance to ensure stroke closes completely
+  const actualLen = Math.max(
+    (el.getTotalLength ? el.getTotalLength() : 1500) + 10,
+    300
+  );
+  
+  el.setAttribute('stroke-dasharray', String(actualLen));
+  el.setAttribute('stroke-dashoffset', String(actualLen));
+
+  const dur = 400 + actualLen * 0.14;
+  tl.add(el, {
+    strokeDashoffset: [actualLen, 0],
+    duration: dur,
+    ease: 'inOutSine'
+  }, i === 0 ? '+=0' : `-=${dur * 0.20}`);
+});
+
+tl.add({}, { duration: 200 });
+
 
     const fillStates = pathEls.map(() => ({ v: 0 }));
     pathEls.forEach((el, i) => {
@@ -364,7 +376,7 @@ const gridSvgClasses = [
       const C      = isDot ? A : P;
       tl.add(state, {
         v: 1,
-        duration: 480,
+        duration: 500,
         ease: 'outCubic',
         onUpdate() {
           const p = state.v;
