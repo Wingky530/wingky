@@ -27,6 +27,7 @@ const glyphs = text.split('').map(char => {
 });
 
 const glyphsJson = JSON.stringify(glyphs);
+const DOT_IDX = text.length - 1;
 
 // Desktop default dimensions (JS overrides for mobile)
 const initX_d: number[] = [];
@@ -62,6 +63,17 @@ const gridSvgClasses = [
   "pointer-events-none",
   isHomePage ? "absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" : "hidden"
 ];
+
+const glyphPaths = glyphs.map((g, i) => {
+  const isDot = i === DOT_IDX;
+  const tx = isHomePage
+    ? Math.round(initX_d[i])
+    : Math.round(finalX_d[i] + (isDot ? -60 : 0));
+  const tf = isHomePage
+    ? `translate(${tx}, -10)`
+    : `translate(${tx}, -10) ${isDot ? '' : 'skewX(-12)'}`;
+  return { d: g.d, transform: tf, isDot };
+});
 ---
 
 {
@@ -79,8 +91,16 @@ const gridSvgClasses = [
         data-is-home-page={String(isHomePage)}
         class="pointer-events-none"
         style="overflow:visible;display:block"
+        viewBox={`0 0 ${initTotalWU_d} ${SVG_HU_d}`}
         width={homeW} height={homeH}
-        aria-hidden="true"></svg>
+        aria-hidden="true">
+        {glyphPaths.map(p => (
+          <path d={p.d} transform={p.transform}
+            class={p.isDot ? 'init-dot' : 'init-path'}
+            stroke-opacity={p.isDot ? '0.4' : '0.22'}
+            stroke-width={p.isDot ? '4' : '3'} />
+        ))}
+      </svg>
 
       <h1 class="sr-only">{text}</h1>
     </div>
@@ -99,14 +119,27 @@ const gridSvgClasses = [
           data-is-home-page={String(isHomePage)}
           class="pointer-events-none"
           style="overflow:visible;display:block"
+          viewBox={`0 0 ${finalTotalWU_d} ${SVG_HU_d}`}
           width={navW} height={navH}
-          aria-hidden="true"></svg>
+          aria-hidden="true">
+          {glyphPaths.map(p => (
+            <path d={p.d} transform={p.transform}
+              class={p.isDot ? 'final-dot' : 'final-path'} />
+          ))}
+        </svg>
 
         <h1 class="sr-only">{text}</h1>
       </div>
     </a>
   )
 }
+
+<style>
+  .init-path { fill: transparent; stroke: var(--color-primary); }
+  .init-dot  { fill: transparent; stroke: var(--color-accent); }
+  .final-path { fill: var(--color-primary); stroke: var(--color-primary); stroke-width: 2; }
+  .final-dot  { fill: var(--color-accent); stroke: var(--color-background); stroke-width: 5; }
+</style>
 
 <script>
   import { createTimeline } from 'animejs/timeline';
@@ -209,46 +242,46 @@ const gridSvgClasses = [
       svg.setAttribute('width',   String(Math.round(wU * s)));
       svg.setAttribute('height',  String(Math.round(SVG_HU * s)));
     };
+
+    // ── Use pre-rendered paths from HTML if available ──
+    pathEls = Array.from(textSvg.querySelectorAll('path'));
+    if (pathEls.length === 0) {
+      // Fallback: create paths (shouldn't happen since HTML has them)
+      pathEls = glyphs.map((g, i) => {
+        const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const isDot = i === DOT_IDX;
+        el.setAttribute('d', g.d);
+        el.setAttribute('fill', 'transparent');
+        el.setAttribute('stroke', isDot
+          ? `rgba(${A.r},${A.g},${A.b},0.4)`
+          : `rgba(${P.r},${P.g},${P.b},0.22)`
+        );
+        el.setAttribute('stroke-width', isDot ? '4' : '3');
+        el.setAttribute('transform', `translate(${initX[i]}, ${GLYPH_VERTICAL_OFFSET})`);
+        textSvg!.appendChild(el);
+        return el;
+      });
+    }
+
+    if (!isHomePage) {
+      // Paths are pre-rendered at final state in HTML; adjust SVG size for mobile
+      const navScale = isMobile ? 0.15 : 0.18;
+      applySize(textSvg, finalTotalWU, navScale);
+      return;
+    }
+
+    // ── Adjust SVG to initial state (JS may have different scale/gaps) ──
     applySize(textSvg, initTotalWU, SCALE);
     applySize(gridSvg, initTotalWU, SCALE);
 
-    // ── Create paths ──
-    pathEls = glyphs.map((g, i) => {
-      const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    // ── Override stroke colors (CSS class uses solid var, but animation needs rgba) ──
+    pathEls.forEach((el, i) => {
       const isDot = i === DOT_IDX;
-      el.setAttribute('d', g.d);
-      el.setAttribute('fill', 'transparent');
       el.setAttribute('stroke', isDot
         ? `rgba(${A.r},${A.g},${A.b},0.4)`
         : `rgba(${P.r},${P.g},${P.b},0.22)`
       );
-      el.setAttribute('stroke-width', isDot ? '4' : '3');
-      el.setAttribute('transform', `translate(${initX[i]}, ${GLYPH_VERTICAL_OFFSET})`);
-      textSvg!.appendChild(el);
-      return el;
     });
-
-    if (!isHomePage) {
-      textSvg.style.opacity = '1';
-      const navScale = isMobile ? 0.15 : 0.18;
-      pathEls.forEach((el, i) => {
-        const xFinal = finalX[i] + (i === DOT_IDX ? DOT_SHIFT : 0);
-        const s = i === DOT_IDX ? 0 : SKEW_FINAL;
-        el.setAttribute('transform', `translate(${xFinal}, ${GLYPH_VERTICAL_OFFSET}) ${i === DOT_IDX ? '' : `skewX(${s})`}`);
-        const isDot = i === DOT_IDX;
-        if (isDot) {
-          el.setAttribute('fill',   COLOR_ACCENT);
-          el.setAttribute('stroke', COLOR_BG);
-          el.setAttribute('stroke-width', '5');
-        } else {
-          el.setAttribute('fill',   COLOR_PRIMARY);
-          el.setAttribute('stroke', COLOR_PRIMARY);
-          el.setAttribute('stroke-width', '2');
-        }
-      });
-      applySize(textSvg, finalTotalWU, navScale);
-      return;
-    }
 
     // ── Skip anim on non-reload nav if flag exists ──
     const navEntry = performance.getEntriesByType?.('navigation')?.[0];
@@ -390,16 +423,5 @@ const gridSvgClasses = [
     tl.add(gridSvg,      { opacity: [1,0], duration: 600, ease: 'outCubic' });
     tl.add('#nav-links', { opacity: [0,1], translateY: [-20,0], duration: 700, ease: 'outCubic' }, '-=450');
     tl.add('#desc-text', { opacity: [0,1], translateY: [20,0],  duration: 700, ease: 'outCubic', onComplete() { sessionStorage.setItem('wingky-anim-played', '1'); } }, '-=550');
-  });
-
-  // ── Finalize home page before view‑transition snapshot ──
-  document.addEventListener('pageswap', () => {
-    if (!isHomePage || !textSvg) return;
-    setHomeFinalState(homeScale);
-    gridSvg!.style.opacity = '0';
-    const navLinks = document.getElementById('nav-links');
-    const descText = document.getElementById('desc-text');
-    if (navLinks) { navLinks.style.opacity = '1'; navLinks.style.transform = 'translateY(0)'; }
-    if (descText) { descText.style.opacity = '1'; descText.style.transform = 'translateY(0)'; }
   });
 </script>
