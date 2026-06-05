@@ -96,7 +96,6 @@ const glyphsJson = JSON.stringify(glyphs);
     const P  = hexToRgb(COLOR_PRIMARY);
     const A  = hexToRgb(COLOR_ACCENT);
     const BG = hexToRgb(COLOR_BG);
-    const TEXT_COLOR = { r: 37, g: 36, b: 34 };
 
     // ── Konstanta layout ──────────────────────────────────────────────
     const isMobile  = window.innerWidth < 768;
@@ -237,7 +236,7 @@ const glyphsJson = JSON.stringify(glyphs);
     pathEls.forEach((el, i) => {
       const state  = fillStates[i];
       const isDot  = i === DOT_IDX;
-      const C      = isDot ? A : TEXT_COLOR;
+      const C      = isDot ? A : P;
       tl.add(state, {
         v: 1,
         duration: 480,
@@ -254,7 +253,7 @@ const glyphsJson = JSON.stringify(glyphs);
             el.setAttribute('stroke',       COLOR_BG);
             el.setAttribute('stroke-width', '5');
           } else {
-            el.setAttribute('fill',   '#252422');
+            el.setAttribute('fill',   COLOR_PRIMARY);
             el.setAttribute('stroke', 'none');
           }
         }

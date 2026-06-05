@@ -18,7 +18,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  @theme {
+  :root {
     --color-background: #ebebdf;
     --color-primary:    #252422;
     --color-muted:      #8a8880;
