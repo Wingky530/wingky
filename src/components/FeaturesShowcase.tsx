@@ -19,9 +19,7 @@
 
 import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { CheckCircle } from '@phosphor-icons/react';
-import { createTimeline } from 'animejs/timeline';
-import { stagger } from 'animejs/utils';
-import { animate } from 'animejs';
+import { animate, createTimeline, stagger } from 'animejs';
 
 /* ── Types ─────────────────────────────────────────────────── */
 
@@ -37,7 +35,7 @@ interface Feature {
   subFeatures: SubFeature[];
   enabled: boolean;
   comingSoon: boolean;
-  illustration: ReactNode;
+  illustration: () => ReactNode;
 }
 
 /* ── Illustration Components ───────────────────────────────── */
@@ -51,7 +49,7 @@ function ResponsivePreviewIllustration() {
     const devices = el.querySelectorAll<HTMLElement>('.device');
     if (!devices.length) return;
 
-    createTimeline()
+    const tl = createTimeline()
       .add(devices, {
         scale: [0.3, 1],
         opacity: [0, 1],
@@ -63,11 +61,12 @@ function ResponsivePreviewIllustration() {
     const pulse = animate(devices, {
       scale: [1, 1.04, 1],
       duration: 2400,
+      delay: 700,
       loop: true,
       ease: 'easeInOutSine',
     });
 
-    return () => { pulse.revert(); };
+    return () => { tl.revert(); pulse.revert(); };
   }, []);
 
   return (
@@ -105,7 +104,7 @@ function CssInspectorIllustration() {
     const tooltip = el.querySelector<HTMLElement>('.tip');
     if (!overlays.length || !tooltip) return;
 
-    createTimeline()
+    const tl = createTimeline()
       .add(overlays, {
         opacity: [0, 1],
         duration: 350,
@@ -119,7 +118,7 @@ function CssInspectorIllustration() {
         ease: 'easeOutExpo',
       }, overlays.length * 200 + 100);
 
-    return () => { };
+    return () => { tl.revert(); };
   }, []);
 
   return (
@@ -163,7 +162,7 @@ function ColorPickerIllustration() {
     if (!cursor || !swatch || !label) return;
 
     const tl = createTimeline({ defaults: { ease: 'easeOutExpo' } });
-    tl.add(cursor, { x: [0, 55], y: [0, 35], duration: 600 }, 0)
+    tl.add(cursor, { translateX: [0, 55], translateY: [0, 35], duration: 600 }, 0)
       .add(cursor, { scale: [1, 0.8, 1], duration: 200 }, 600)
       .add(swatch, { scale: [0, 1], opacity: [0, 1], duration: 400 }, 800)
       .add(label, { opacity: [0, 1], translateY: [6, 0], duration: 250 }, 1000);
@@ -214,7 +213,7 @@ function DomTreeIllustration() {
     const nodes = el.querySelectorAll<HTMLElement>('.t-node');
     if (!nodes.length) return;
 
-    createTimeline()
+    const tl = createTimeline()
       .add(nodes, {
         opacity: [0, 1],
         translateX: [-8, 0],
@@ -223,7 +222,7 @@ function DomTreeIllustration() {
         ease: 'easeOutQuad',
       }, 0);
 
-    return () => { };
+    return () => { tl.revert(); };
   }, []);
 
   return (
@@ -259,18 +258,19 @@ function PerformanceIllustration() {
     const arc = el.querySelector<HTMLElement>('.p-arc');
     if (!bars.length) return;
 
-    createTimeline()
+    const tl = createTimeline()
       .add(bars, {
         scaleY: [0, 1],
         opacity: [0, 1],
         duration: 500,
         delay: stagger(100),
         ease: 'easeOutExpo',
-        transformOrigin: 'bottom',
+        transformOrigin: 'center bottom',
       }, 0);
 
+    let arcAnim: ReturnType<typeof animate> | null = null;
     if (arc) {
-      animate(arc, {
+      arcAnim = animate(arc, {
         strokeDashoffset: [300, 0],
         duration: 1200,
         delay: 600,
@@ -278,7 +278,7 @@ function PerformanceIllustration() {
       });
     }
 
-    return () => { };
+    return () => { tl.revert(); arcAnim?.revert(); };
   }, []);
 
   return (
@@ -323,7 +323,7 @@ function ConsolePanelIllustration() {
     const lines = el.querySelectorAll<HTMLElement>('.c-line');
     if (!lines.length) return;
 
-    createTimeline()
+    const tl = createTimeline()
       .add(lines, {
         opacity: [0, 1],
         translateX: [-4, 0],
@@ -332,7 +332,7 @@ function ConsolePanelIllustration() {
         ease: 'easeOutQuad',
       }, 0);
 
-    return () => { };
+    return () => { tl.revert(); };
   }, []);
 
   return (
@@ -367,17 +367,17 @@ function NetworkWaterfallIllustration() {
     const bars = el.querySelectorAll<HTMLElement>('.n-bar');
     if (!bars.length) return;
 
-    createTimeline()
+    const tl = createTimeline()
       .add(bars, {
         scaleX: [0, 1],
         opacity: [0, 1],
         duration: 400,
         delay: stagger(180),
         ease: 'easeOutExpo',
-        transformOrigin: 'left',
+        transformOrigin: 'left center',
       }, 0);
 
-    return () => { };
+    return () => { tl.revert(); };
   }, []);
 
   return (
@@ -426,7 +426,7 @@ function AccessibilityAuditIllustration() {
     const items = el.querySelectorAll<HTMLElement>('.a-item');
     if (!items.length) return;
 
-    createTimeline()
+    const tl = createTimeline()
       .add(items, {
         opacity: [0, 1],
         translateX: [-6, 0],
@@ -435,7 +435,7 @@ function AccessibilityAuditIllustration() {
         ease: 'easeOutQuad',
       }, 0);
 
-    return () => { };
+    return () => { tl.revert(); };
   }, []);
 
   return (
@@ -481,7 +481,7 @@ function LighthouseIllustration() {
     const arcs = el.querySelectorAll<HTMLElement>('.l-arc');
     if (!arcs.length) return;
 
-    createTimeline()
+    const tl = createTimeline()
       .add(arcs, {
         strokeDashoffset: [120, 0],
         duration: 800,
@@ -489,7 +489,7 @@ function LighthouseIllustration() {
         ease: 'easeOutExpo',
       }, 0);
 
-    return () => { };
+    return () => { tl.revert(); };
   }, []);
 
   return (
@@ -539,7 +539,7 @@ const features: Feature[] = [
     ],
     enabled: true,
     comingSoon: false,
-    illustration: <ResponsivePreviewIllustration />,
+    illustration: () => <ResponsivePreviewIllustration />,
   },
   {
     id: 'css-inspector',
@@ -552,9 +552,9 @@ const features: Feature[] = [
       { icon: CheckCircle, label: 'Flexbox & Grid debug overlays' },
       { icon: CheckCircle, label: 'Live style editing' },
     ],
-    enabled: false,
+    enabled: true,
     comingSoon: false,
-    illustration: <CssInspectorIllustration />,
+    illustration: () => <CssInspectorIllustration />,
   },
   {
     id: 'color-picker',
@@ -566,9 +566,9 @@ const features: Feature[] = [
       { icon: CheckCircle, label: 'Dominant color palette generator' },
       { icon: CheckCircle, label: 'One-click copy' },
     ],
-    enabled: false,
+    enabled: true,
     comingSoon: false,
-    illustration: <ColorPickerIllustration />,
+    illustration: () => <ColorPickerIllustration />,
   },
   {
     id: 'dom-tree',
@@ -580,9 +580,9 @@ const features: Feature[] = [
       { icon: CheckCircle, label: 'View attached event handlers' },
       { icon: CheckCircle, label: 'Find by tag, class, or ID' },
     ],
-    enabled: false,
+    enabled: true,
     comingSoon: false,
-    illustration: <DomTreeIllustration />,
+    illustration: () => <DomTreeIllustration />,
   },
   {
     id: 'performance',
@@ -594,9 +594,9 @@ const features: Feature[] = [
       { icon: CheckCircle, label: 'Request waterfall with latencies' },
       { icon: CheckCircle, label: 'Heap size & GC cycles' },
     ],
-    enabled: false,
+    enabled: true,
     comingSoon: false,
-    illustration: <PerformanceIllustration />,
+    illustration: () => <PerformanceIllustration />,
   },
   {
     id: 'console',
@@ -608,9 +608,9 @@ const features: Feature[] = [
       { icon: CheckCircle, label: 'Syntax-highlighted output' },
       { icon: CheckCircle, label: 'Runtime error catching' },
     ],
-    enabled: false,
+    enabled: true,
     comingSoon: true,
-    illustration: <ConsolePanelIllustration />,
+    illustration: () => <ConsolePanelIllustration />,
   },
   {
     id: 'network',
@@ -622,9 +622,9 @@ const features: Feature[] = [
       { icon: CheckCircle, label: 'Status codes & sizes' },
       { icon: CheckCircle, label: 'Filter and search requests' },
     ],
-    enabled: false,
+    enabled: true,
     comingSoon: true,
-    illustration: <NetworkWaterfallIllustration />,
+    illustration: () => <NetworkWaterfallIllustration />,
   },
   {
     id: 'accessibility',
@@ -636,9 +636,9 @@ const features: Feature[] = [
       { icon: CheckCircle, label: 'ARIA attribute validation' },
       { icon: CheckCircle, label: 'Detailed audit reports' },
     ],
-    enabled: false,
+    enabled: true,
     comingSoon: true,
-    illustration: <AccessibilityAuditIllustration />,
+    illustration: () => <AccessibilityAuditIllustration />,
   },
   {
     id: 'lighthouse',
@@ -650,9 +650,9 @@ const features: Feature[] = [
       { icon: CheckCircle, label: 'Mobile vs desktop audits' },
       { icon: CheckCircle, label: 'Actionable recommendations' },
     ],
-    enabled: false,
+    enabled: true,
     comingSoon: true,
-    illustration: <LighthouseIllustration />,
+    illustration: () => <LighthouseIllustration />,
   },
 ];
 
@@ -673,42 +673,22 @@ function TabButton({
   onClick: () => void;
   refCallback: (el: HTMLButtonElement | null) => void;
 }) {
-  if (active) {
-    return (
-      <button ref={refCallback} onClick={onClick}
-        className="relative shrink-0 px-4 py-2 text-sm font-medium whitespace-nowrap text-primary transition-colors duration-200"
-      >
-        {label}
-      </button>
-    );
-  }
-
-  if (enabled) {
-    return (
-      <button ref={refCallback} onClick={onClick}
-        className="relative shrink-0 px-4 py-2 text-sm font-medium whitespace-nowrap text-muted
-          transition-colors duration-200 cursor-pointer"
-      >
-        {label}
-      </button>
-    );
-  }
-
-  if (comingSoon) {
-    return (
-      <button ref={refCallback}
-        className="relative shrink-0 px-4 py-2 text-xs font-medium whitespace-nowrap
-          text-muted opacity-25 cursor-not-allowed transition-colors duration-200"
-      >
-        {label}
-      </button>
-    );
-  }
-
+  const isClickable = active || enabled;
+  
   return (
-    <button ref={refCallback}
-      className="relative shrink-0 px-4 py-2 text-sm font-medium whitespace-nowrap
-        text-muted opacity-40 cursor-not-allowed transition-colors duration-200"
+    <button
+      ref={refCallback}
+      onClick={isClickable ? onClick : undefined}
+      disabled={!isClickable}
+      className={`relative shrink-0 px-4 py-2 font-medium whitespace-nowrap transition-colors duration-200 ${
+        active
+          ? 'text-sm text-primary'
+          : enabled
+          ? 'text-sm text-muted cursor-pointer'
+          : comingSoon
+          ? 'text-xs text-muted opacity-25 cursor-not-allowed'
+          : 'text-sm text-muted opacity-40 cursor-not-allowed'
+      }`}
     >
       {label}
     </button>
@@ -803,8 +783,20 @@ export default function FeaturesShowcase() {
         <div key={activeIdx} ref={contentRef} className="flex flex-col md:flex-row gap-8 md:gap-12">
           {/* Illustration — first on mobile, right on md+ */}
           <div className="order-first md:order-last md:w-1/2">
-            <div className="rounded-2xl border border-border bg-background overflow-hidden min-h-[180px] flex items-center justify-center">
-              {active.illustration}
+            <div className="rounded-2xl border border-border bg-background overflow-hidden">
+              {/* Chrome top bar */}
+              <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border bg-background">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#22C55E]" />
+                <span className="ml-3 text-[10px] font-mono text-muted/60 truncate select-none">
+                  viewport.app/{active.id}
+                </span>
+              </div>
+              {/* Illustration */}
+              <div className="min-h-[180px] flex items-center justify-center p-4">
+                {active.illustration()}
+              </div>
             </div>
           </div>
 

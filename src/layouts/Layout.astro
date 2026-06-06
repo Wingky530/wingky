@@ -4,10 +4,13 @@ import GridBackground from '../components/GridBackground.astro';
 import GridRipple from '../components/GridRipple.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
 
-const { slot } = Astro.props;
+const { slot, scrollable } = Astro.props;
+const htmlClass = scrollable
+  ? 'scroll-smooth bg-background text-primary'
+  : 'scroll-smooth bg-background text-primary overflow-hidden';
 ---
 <!DOCTYPE html>
-<html lang="en" data-theme="dark" class="scroll-smooth bg-background text-primary overflow-hidden">
+<html lang="en" data-theme="dark" class={htmlClass}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />

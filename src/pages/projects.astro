@@ -4,10 +4,10 @@ import Nav from '../components/Nav.astro';
 import Canvas from '../components/Canvas.astro';
 import FeaturesShowcase from '../components/FeaturesShowcase.tsx';
 ---
-<Layout>
+<Layout scrollable>
   <Canvas />
   <Nav />
-  <div class="min-h-screen overflow-y-auto w-full">
+  <div class="min-h-screen w-full relative">
     <FeaturesShowcase client:load />
   </div>
 </Layout>
