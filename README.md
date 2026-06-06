@@ -7,7 +7,7 @@
 
 
 
-**Space for thinking. Built for the web.**
+**Design, Align and refine.**
 
 ## About
 
