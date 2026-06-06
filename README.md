@@ -11,7 +11,7 @@
 
 ## About
 
-Personal portfolio built with a focus on motion and detail — animated SVG title drawn stroke-by-stroke, a black hole theme toggle with radial reveal, per-cell grid ripple, and a canvas particle system that reacts to theme changes. Dark by default.
+Personal portfolio built with a focus on motion and detail, animated SVG title drawn stroke-by-stroke, a black hole theme toggle with radial reveal, per-cell grid ripple, and a canvas particle system that reacts to theme changes. Dark by default.
 
 ### Built With
 
@@ -52,7 +52,7 @@ pnpm build
 
 # Preview production build
 pnpm preview
-\```
+```
 
 ### Forking This Portfolio
 
@@ -67,7 +67,7 @@ pnpm preview
 
 ## Project Structure
 
-\```
+```
 src/
 ├── components/
 │   ├── AnimatedTitle.astro   # SVG title with stroke-draw animation
@@ -84,7 +84,7 @@ src/
 │   └── contact.astro         # Contact page
 └── styles/
     └── global.css            # Theme variables, fonts, base styles
-\```
+```
 
 ## Projects
 
@@ -105,7 +105,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 [TailwindCSS-url]: https://tailwindcss.com/
 [PNPM.io]: https://img.shields.io/badge/pnpm-F69220?style=for-the-badge&logo=pnpm&logoColor=white
 [PNPM-url]: https://pnpm.io/
-[Animejs.com]: https://img.shields.io/badge/Anime.js-FF6B6B?style=for-the-badge&logoColor=white
+[Animejs.com]: https://img.shields.io/badge/Anime.js-FC4F4E?style=for-the-badge&logoColor=white
 [Animejs-url]: https://animejs.com/
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right"><a href="#readme-top">back to top</a></p>
