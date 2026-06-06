@@ -1,25 +1,13 @@
 ---
+import Layout from '../layouts/Layout.astro';
 import Nav from '../components/Nav.astro';
 import Canvas from '../components/Canvas.astro';
-import Layout from '../layouts/Layout.astro';
+import FeaturesShowcase from '../components/FeaturesShowcase.tsx';
 ---
 <Layout>
   <Canvas />
   <Nav />
-  <div class="min-h-screen flex flex-col items-center justify-center px-4 py-24">
-    <h1 class="text-4xl md:text-5xl font-bold mb-12 text-center tracking-tight">Projects</h1>
-    <div class="max-w-2xl w-full">
-      <div class="bg-black/40 backdrop-blur-md rounded-xl p-8 border border-border hover:border-muted transition-colors duration-300">
-        <h2 class="text-2xl font-semibold mb-4 text-primary">ViewPort</h2>
-        <p class="mb-8 text-muted leading-relaxed">
-          An open-source and free web toolkit — a growing suite of developer utilities
-          starting with a responsive preview tool.
-        </p>
-        <a href="https://github.com/Wingky530/viewport" 
-           class="inline-flex items-center text-sm font-medium text-background bg-primary px-4 py-2 rounded-md hover:bg-muted transition-colors">
-          View on GitHub
-        </a>
-      </div>
-    </div>
+  <div class="min-h-screen overflow-y-auto w-full">
+    <FeaturesShowcase client:load />
   </div>
 </Layout>
