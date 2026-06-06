@@ -565,7 +565,7 @@ export default function ViewPortProject() {
         </div>
 
         {/* Right Column — tabs + browser panel */}
-        <div className="md:w-[60%] min-w-0 mr-0 md:mr-[-4rem]">
+        <div className="md:w-[60%] min-w-0 -mr-4 md:-mr-8">
 
           {/* Pill Tab Bar */}
           <div
@@ -604,7 +604,7 @@ export default function ViewPortProject() {
           </div>
 
           {/* Browser Chrome Panel */}
-          <div className="rounded-xl md:rounded-r-none border border-border md:border-r-0 bg-background overflow-hidden">
+          <div className="rounded-tl-xl rounded-bl-xl border border-border border-r-0 bg-background overflow-hidden">
             {/* Top bar */}
             <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border">
               <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
