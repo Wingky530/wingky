@@ -2,9 +2,9 @@
 /**
  * GridBackground.astro
  *
- * Layer grid transparan (garis-garis) sebagai background texture.
- * z-index rendah agar kena efek overlay reveal.
- * Grid di-rebuild otomatis saat window resize (debounced 150ms).
+ * Transparent grid layer (lines only) as a background texture.
+ * Low z-index so it gets covered by the overlay reveal effect.
+ * Auto-rebuilds on window resize (debounced 150ms).
  */
 ---
 
@@ -20,13 +20,13 @@
   }
 
   #grid-background > :global(div) {
-    border-right:  1px solid color-mix(in srgb, var(--color-border) 18%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 18%, transparent);
+    border-right:  1px solid color-mix(in srgb, var(--color-border) 35%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 35%, transparent);
   }
 </style>
 
 <script>
-  const CELL_SIZE = 36;
+  const CELL_SIZE = window.innerWidth < 768 ? 24 : 36;
 
   function buildGrid() {
     const container = document.getElementById('grid-background');

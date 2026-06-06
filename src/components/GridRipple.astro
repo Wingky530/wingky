@@ -2,9 +2,9 @@
 /**
  * GridRipple.astro
  *
- * Layer transparan khusus untuk efek ripple flash saat theme toggle.
- * z-index tinggi (di atas overlay) agar flash terlihat menimpa reveal circle.
- * Mendengarkan custom event 'theme-ripple' dari ThemeToggle untuk trigger animasi.
+ * Transparent layer for ripple flash effect during theme toggle.
+ * High z-index (above overlay) so the flash appears on top of the reveal circle.
+ * Listens to 'theme-ripple' custom event from ThemeToggle to trigger animation.
  */
 ---
 
@@ -27,7 +27,7 @@
 <script>
   import { animate } from 'animejs';
 
-  const CELL_SIZE = 36;
+  const CELL_SIZE = window.innerWidth < 768 ? 24 : 36;
 
   function buildRippleGrid() {
     const container = document.getElementById('grid-ripple');
@@ -68,10 +68,12 @@
     const cells = document.querySelectorAll('[data-ripple-cell]');
     if (!cells.length) return;
 
-    // Warna ripple = primary tema berikutnya (kontras terhadap overlay bg)
-    const flashColor = nextTheme === 'dark' ? '235,235,223' : '37,36,34';
+    const isOutward = currentTheme === 'dark';
+    // Outward: light color (contrast against dark overlay)
+    // Inward: dark color (contrast against light bg)
+    const flashColor = isOutward ? '235,235,223' : '37,36,34';
 
-    // Hitung jarak max untuk invert delay
+    // Calculate max distance for inverted delay
     const maxDist = Math.hypot(
       Math.max(x, window.innerWidth - x),
       Math.max(y, window.innerHeight - y)
@@ -79,7 +81,6 @@
 
     // Dark mode (white hole) → ripple keluar dari tombol
     // Light mode (black hole) → ripple masuk ke tombol
-    const isOutward = currentTheme === 'dark';
 
     animate(cells, {
       backgroundColor: [`rgba(${flashColor},0)`, `rgba(${flashColor},1)`, `rgba(${flashColor},0)`],

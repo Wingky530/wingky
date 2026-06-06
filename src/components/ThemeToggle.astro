@@ -2,28 +2,67 @@
 /**
  * ThemeToggle.astro
  *
- * Tombol pengganti tema (dark/light), fixed di bawah-tengah viewport.
- * Ikon: single black hole / white hole SVG, warna kebalikan dari bg.
- * Transisi ikon: shrink → expand saat toggle.
+ * Theme toggle button, fixed at bottom-center of viewport.
+ * Icon: black hole SVG with layered accretion disk, ring, and event horizon.
+ * Icon transition: shrink → expand on toggle.
  *
- * Saat diklik:
- * 1. Overlay #theme-reveal membesar (clip-path circle) dari tombol ke luar
- *    dengan warna background tema berikutnya.
- * 2. Grid ripple flash per-sel (warna bg tema berikutnya), delay radial.
- * 3. Tema ditukar di tengah animasi (~550ms).
- * 4. Overlay di-fade setelah penuh.
+ * On click:
+ * 1. Outward (dark→light): overlay expands via clip-path circle from button,
+ *    theme swaps behind overlay at ~600ms, overlay fades out after.
+ * 2. Inward (light→dark): overlay appears full instantly, theme swaps immediately
+ *    behind it, overlay shrinks to reveal new theme from outside in.
+ * 3. Grid ripple dispatched via 'theme-ripple' custom event.
+ *
+ * ── Blocks ──
+ * - applyTheme       Set data-theme, save to localStorage, dispatch themechange
+ * - click handler    Orchestrate overlay reveal + ripple + theme swap
  */
 ---
 <button id="theme-toggle" aria-label="Toggle theme">
-  <svg id="toggle-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <!-- Accretion disk (event horizon) -->
-    <ellipse cx="12" cy="12" rx="10" ry="3" class="hole-disk" />
-    <!-- Black hole core (singularity) -->
-    <circle cx="12" cy="12" r="4" class="hole-core" />
+  <svg id="toggle-icon" width="24" height="24" viewBox="0 0 120 120" fill="none">
+    <defs>
+      <mask id="ring-mask">
+        <rect width="120" height="120" fill="white"/>
+        <circle cx="60" cy="60" r="22" fill="black"/>
+      </mask>
+      <mask id="disk-front-mask">
+        <circle cx="60" cy="60" r="21.5" fill="white"/>
+      </mask>
+      <mask id="disk-back-mask">
+        <rect width="120" height="120" fill="white"/>
+        <circle cx="60" cy="60" r="22" fill="black"/>
+      </mask>
+      <mask id="horizon-mask">
+        <circle cx="60" cy="60" r="21.5" fill="white"/>
+      </mask>
+    </defs>
+
+    <!-- Accretion Disk (back) -->
+    <g id="disk-back">
+      <ellipse cx="60" cy="60" rx="52" ry="7.5" transform="rotate(-35 60 60)"
+        class="hole-fill" mask="url(#disk-back-mask)" />
+    </g>
+
+    <!-- Outer Ring (donat) -->
+    <g id="outer-ring">
+      <circle cx="60" cy="60" r="32" class="hole-fill" mask="url(#ring-mask)" />
+    </g>
+
+    <!-- Event Horizon -->
+    <g id="event-horizon" mask="url(#horizon-mask)">
+      <circle cx="60" cy="60" r="19.5" class="hole-stroke" stroke-width="1.4" fill="none" />
+      <circle cx="60" cy="60" r="16.8" class="hole-stroke-dim" stroke-width="0.8" fill="none" />
+    </g>
+
+    <!-- Accretion Disk (front) -->
+    <g id="disk-front">
+      <ellipse cx="60" cy="60" rx="52" ry="7.5" transform="rotate(-35 60 60)"
+        class="hole-fill" mask="url(#disk-front-mask)" />
+    </g>
   </svg>
 </button>
 
-<!-- Overlay untuk circle reveal -->
+<!-- Overlay for circle reveal -->
 <div id="theme-reveal" aria-hidden="true"></div>
 
 <style>
@@ -54,49 +93,31 @@
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  :global(.hole-disk) {
-    transform-origin: 12px 12px;
-    transform: rotate(-45deg);
-    animation: pulse-disk 2s ease-in-out infinite;
+  :global(.hole-fill) {
+    fill: var(--color-primary);
+  }
+  :global(.hole-stroke) {
+    stroke: var(--color-primary);
+  }
+  :global(.hole-stroke-dim) {
+    stroke: var(--color-primary);
+    opacity: 0.55;
+  }
+
+  :global(#disk-back ellipse), :global(#disk-front ellipse) {
+    animation: pulse-disk 2.5s ease-in-out infinite;
   }
 
   @keyframes pulse-disk {
-    0%, 100% { ry: 3; }
-    50% { ry: 1.5; }
+    0%, 100% { ry: 7.5; }
+    50% { ry: 4; }
   }
 
-  /* Dark mode: white hole (outline, light color) */
-  :global([data-theme="dark"] .hole-disk) {
-    fill: none;
-    stroke: var(--color-primary);
-    stroke-width: 1.2;
-    opacity: 0.7;
-  }
-  :global([data-theme="dark"] .hole-core) {
-    fill: none;
-    stroke: var(--color-primary);
-    stroke-width: 2;
-  }
-
-  /* Light mode: black hole (filled, dark color) */
-  :global([data-theme="light"] .hole-disk) {
-    fill: none;
-    stroke: var(--color-primary);
-    stroke-width: 1.2;
-    opacity: 0.7;
-  }
-  :global([data-theme="light"] .hole-core) {
-    fill: none;
-    stroke: var(--color-primary);
-    stroke-width: 2;
-  }
-
-  /* Overlay reveal */
   #theme-reveal {
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 10;
+    z-index: 5;
     opacity: 0;
     will-change: clip-path, opacity;
   }
@@ -112,16 +133,15 @@
   const iconEl = document.getElementById('toggle-icon');
   let isAnimating = false;
 
-  function hexToRgb(hex: string): [number, number, number] {
-    const h = hex.replace('#', '');
-    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
-  }
-
   function applyTheme(newTheme: string) {
+    document.documentElement.style.viewTransitionName = 'none';
     document.documentElement.setAttribute('data-theme', newTheme);
     currentTheme = newTheme;
     localStorage.setItem('wingky-theme', newTheme);
     window.dispatchEvent(new Event('themechange'));
+    requestAnimationFrame(() => {
+      document.documentElement.style.viewTransitionName = '';
+    });
   }
 
   toggleBtn?.addEventListener('click', () => {
@@ -141,67 +161,75 @@
     const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
     const origTheme = currentTheme;
     const nextBg = nextTheme === 'dark' ? BG_DARK : BG_LIGHT;
-    const [r, g, b] = hexToRgb(nextBg);
+    const isOutward = currentTheme === 'dark';
 
     const maxR = Math.ceil(Math.hypot(
       Math.max(x, window.innerWidth - x),
       Math.max(y, window.innerHeight - y)
-    ));
+    )) + 100;
 
     // Icon shrink → expand
     if (iconEl) {
       iconEl.style.transform = 'scale(0)';
-      setTimeout(() => {
-        iconEl.style.transform = 'scale(1)';
-      }, 400);
+      setTimeout(() => { iconEl.style.transform = 'scale(1)'; }, 400);
     }
 
-    // Overlay reveal via clip-path
-    // Dark (white hole) → expand outward; Light (black hole) → shrink inward
-    const isOutward = currentTheme === 'dark';
-    const overlayColor = isOutward ? nextBg : (currentTheme === 'dark' ? BG_DARK : BG_LIGHT);
-    if (revealEl) {
-      revealEl.style.transition = 'none';
-      revealEl.style.backgroundColor = overlayColor;
-      revealEl.style.opacity = '1';
-      if (isOutward) {
-        revealEl.style.clipPath = `circle(0px at ${x}px ${y}px)`;
-        void revealEl.offsetWidth;
-        revealEl.style.transition = 'clip-path 1600ms cubic-bezier(0.4, 0, 0.2, 1)';
-        revealEl.style.clipPath = `circle(${maxR}px at ${x}px ${y}px)`;
-      } else {
-        // Inward: overlay starts full, theme swaps immediately behind it, then shrinks to reveal
-        applyTheme(nextTheme);
-        revealEl.style.clipPath = `circle(${maxR}px at ${x}px ${y}px)`;
-        void revealEl.offsetWidth;
-        revealEl.style.transition = 'clip-path 1600ms cubic-bezier(0.4, 0, 0.2, 1)';
-        revealEl.style.clipPath = `circle(0px at ${x}px ${y}px)`;
-      }
-    }
-
-    // Grid ripple (dispatch to GridRipple component)
+    // Grid ripple
     window.dispatchEvent(new CustomEvent('theme-ripple', {
       detail: { x, y, nextTheme, currentTheme: origTheme }
     }));
 
-    // Swap tema — outward: delay; inward: already applied above
-    if (isOutward) {
-      setTimeout(() => applyTheme(nextTheme), 800);
-    }
+    if (revealEl) {
+      revealEl.style.transition = 'none';
+      revealEl.style.zIndex = '15';
+      revealEl.style.opacity = '1';
 
-    // Fade out overlay setelah reveal selesai — mengungkap konten berwarna baru
-    setTimeout(() => {
-      if (revealEl) {
-        revealEl.style.transition = 'opacity 300ms ease';
-        revealEl.style.opacity = '0';
+      if (isOutward) {
+        // ── OUTWARD (dark→light): overlay expand dari tombol ──
+        revealEl.style.backgroundColor = nextBg;
+        revealEl.style.clipPath = `circle(0px at ${x}px ${y}px)`;
+        void revealEl.offsetWidth;
+        revealEl.style.transition = 'clip-path 2000ms cubic-bezier(0.42, 0, 0.58, 1)';
+        revealEl.style.clipPath = `circle(${maxR}px at ${x}px ${y}px)`;
+
+        // Swap theme at 600ms — overlay already covers content area
+        setTimeout(() => applyTheme(nextTheme), 600);
+
+        // Fade out overlay shortly after swap
+        setTimeout(() => {
+          revealEl.style.transition = 'opacity 200ms ease';
+          revealEl.style.opacity = '0';
+          setTimeout(() => {
+            revealEl.style.transition = 'none';
+            revealEl.style.clipPath = 'circle(0% at 50% 100%)';
+            isAnimating = false;
+          }, 250);
+        }, 700);
+
+      } else {
+        // ── INWARD (light→dark): overlay instant full, lalu shrink ──
+        const currentBg = BG_LIGHT;
+        revealEl.style.backgroundColor = currentBg;
+        revealEl.style.clipPath = `circle(${maxR}px at ${x}px ${y}px)`;
+        void revealEl.offsetWidth;
+
+        // Swap theme immediately behind overlay (fully covered)
+        setTimeout(() => applyTheme(nextTheme), 50);
+
+        // Start shrink after micro-delay
+        setTimeout(() => {
+          revealEl.style.transition = 'clip-path 1600ms cubic-bezier(0.42, 0, 0.58, 1)';
+          revealEl.style.clipPath = `circle(0px at ${x}px ${y}px)`;
+        }, 100);
+
+        // Overlay shrink ke 0 = otomatis hilang, reset state
         setTimeout(() => {
           revealEl.style.transition = 'none';
+          revealEl.style.opacity = '0';
           revealEl.style.clipPath = 'circle(0% at 50% 100%)';
           isAnimating = false;
-        }, 320);
-      } else {
-        isAnimating = false;
+        }, 1750);
       }
-    }, 1000);
+    }
   });
 </script>

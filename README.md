@@ -1,27 +1,96 @@
-# <i>Wingky</i>.
+<a name="readme-top"></a>
+# *Wingky*.
+
+
 
 ![Wingky Logo](public/img/logo.png)
 
-**Personal portfolio and landing page.**
 
-## About The Project
 
-Wingky is a personal portfolio site designed to showcase projects and professional work. The main page features a minimal, elegant design with smooth animations and a canvas-based particle background, linking to key projects like ViewPort.
+**Space for thinking. Built for the web.**
+
+## About
+
+Personal portfolio built with a focus on motion and detail — animated SVG title drawn stroke-by-stroke, a black hole theme toggle with radial reveal, per-cell grid ripple, and a canvas particle system that reacts to theme changes. Dark by default.
 
 ### Built With
 
 * [![Astro][Astro.dev]][Astro-url]
-* [![React][React.js]][React-url]
 * [![Tailwind CSS][TailwindCSS.com]][TailwindCSS-url]
 * [![Anime.js][Animejs.com]][Animejs-url]
-* [![Phosphor Icons][PhosphorIcons.com]][PhosphorIcons-url]
 * [![PNPM][PNPM.io]][PNPM-url]
+
+### Key Features
+
+- **Animated SVG Title** — stroke-draw intro with construction grid lines, font path extraction via `opentype.js`
+- **Black Hole Theme Toggle** — radial clip-path reveal (outward expand → inward shrink) with synchronized grid ripple flash
+- **Canvas Particles** — floating particle layer that responds to theme changes in real time
+- **Grid Background** — fixed viewport grid texture with per-cell ripple animation on theme switch
+
+## Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18+)
+- [PNPM](https://pnpm.io/) (v8+)
+
+### Installation
+
+```bash
+# Clone the repo
+git clone https://github.com/Wingky530/wingky.git
+cd wingky
+
+# Install dependencies
+pnpm install
+
+# Start dev server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Preview production build
+pnpm preview
+\```
+
+### Forking This Portfolio
+
+1. Fork the repository
+2. Replace content in `src/pages/index.astro` with your own info
+3. Replace font files in `public/fonts/` with your own (TTF required for animated title)
+4. Update colors in `src/styles/global.css` under `@theme` and `[data-theme="light"]`
+5. Replace `public/img/logo.png` with your own logo
+6. Update links and text throughout `src/pages/`
+
+> **Note:** The animated title uses `opentype.js` — only TTF/OTF fonts are supported, not WOFF2.
+
+## Project Structure
+
+\```
+src/
+├── components/
+│   ├── AnimatedTitle.astro   # SVG title with stroke-draw animation
+│   ├── Canvas.astro          # Particle background
+│   ├── GridBackground.astro  # Grid lines (background texture)
+│   ├── GridRipple.astro      # Grid ripple flash layer
+│   ├── Nav.astro             # Navigation bar
+│   └── ThemeToggle.astro     # Black hole theme toggle + overlay
+├── layouts/
+│   └── Layout.astro          # Base HTML layout
+├── pages/
+│   ├── index.astro           # Landing page
+│   ├── projects.astro        # Projects page
+│   └── contact.astro         # Contact page
+└── styles/
+    └── global.css            # Theme variables, fonts, base styles
+\```
 
 ## Projects
 
 ### ViewPort
 
-An open-source and free web toolkit — a growing suite of developer utilities starting with a responsive preview tool.
+An open-source web toolkit — starting with a responsive preview tool for testing layouts across screen sizes.
 
 [View on GitHub →](https://github.com/Wingky530/viewport)
 
@@ -29,18 +98,14 @@ An open-source and free web toolkit — a growing suite of developer utilities s
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <!-- MARKDOWN LINKS & IMAGES -->
 [Astro.dev]: https://img.shields.io/badge/Astro-B35F97?style=for-the-badge&logo=astro&logoColor=white
 [Astro-url]: https://astro.build/
-[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[React-url]: https://react.dev/
 [TailwindCSS.com]: https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white
 [TailwindCSS-url]: https://tailwindcss.com/
-[PhosphorIcons.com]: https://img.shields.io/badge/Phosphor_Icons-20232A?style=for-the-badge&logo=phosphor-icons&logoColor=white
-[PhosphorIcons-url]: https://phosphoricons.com/
 [PNPM.io]: https://img.shields.io/badge/pnpm-F69220?style=for-the-badge&logo=pnpm&logoColor=white
 [PNPM-url]: https://pnpm.io/
-[Animejs.com]: https://img.shields.io/badge/Anime.js-FFB300?style=for-the-badge&logo=animejs&logoColor=white
+[Animejs.com]: https://img.shields.io/badge/Anime.js-FF6B6B?style=for-the-badge&logoColor=white
 [Animejs-url]: https://animejs.com/
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
