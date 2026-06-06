@@ -2,12 +2,12 @@
 import Layout from '../layouts/Layout.astro';
 import Nav from '../components/Nav.astro';
 import Canvas from '../components/Canvas.astro';
-import FeaturesShowcase from '../components/FeaturesShowcase.tsx';
+import ViewPortProject from '../components/ViewPortProject.tsx';
 ---
 <Layout scrollable>
   <Canvas />
   <Nav />
   <div class="min-h-screen w-full relative">
-    <FeaturesShowcase client:load />
+    <ViewPortProject client:load />
   </div>
 </Layout>

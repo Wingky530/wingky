@@ -1,20 +1,19 @@
 /**
- * FeaturesShowcase — Tab-based feature showcase for ViewPort,
- * rendered on Wingky's /projects page.
+ * ViewPortProject — Laravel-inspired two-column showcase for ViewPort
+ * on Wingky's /projects page.
  *
- * Layout: Tab bar → Content panel (illustration on top for mobile,
- * side-by-side on md+).  3 tab tiers: active, disabled, coming-soon.
+ * Layout:
+ *   Desktop: Left col (40%) static text | Right col (60%) pill tabs + browser chrome panel bleeding off right edge
+ *   Mobile: Stacked — text first, then tabs + panel
  *
- * Illustration components (9 total):
- *   ResponsivePreview  — phone / tablet / monitor SVG outlines
- *   CssInspector       — DOM highlight overlay + tooltip
- *   ColorPicker        — cursor click + swatch pop
- *   DomTree            — indented HTML tree with branches
- *   Performance        — gradient bar chart + gauge arc
- *   ConsolePanel       — terminal window with log lines
- *   NetworkWaterfall   — request bars like Chrome DevTools
- *   AccessibilityAudit — shield + checklist (✓ / ✗)
- *   LighthouseScore    — 3 circular score meters
+ * Illustrations (9 total, Anime.js v4):
+ *   ResponsivePreview, CssInspector, ColorPicker, DomTree, Performance,
+ *   ConsolePanel, NetworkWaterfall, AccessibilityAudit, Lighthouse
+ *
+ * Tab tiers:
+ *   Active (1): full opacity, clickable
+ *   Disabled (4): opacity-40, cursor-not-allowed
+ *   Coming Soon (4): opacity-20, cursor-not-allowed, "Soon" badge
  */
 
 import { useState, useEffect, useRef, type ReactNode } from 'react';
@@ -23,16 +22,9 @@ import { animate, createTimeline, stagger } from 'animejs';
 
 /* ── Types ─────────────────────────────────────────────────── */
 
-interface SubFeature {
-  icon: typeof CheckCircle;
-  label: string;
-}
-
 interface Feature {
   id: string;
   name: string;
-  description: string;
-  subFeatures: SubFeature[];
   enabled: boolean;
   comingSoon: boolean;
   illustration: () => ReactNode;
@@ -70,20 +62,17 @@ function ResponsivePreviewIllustration() {
   }, []);
 
   return (
-    <div ref={ref} className="flex items-end justify-center gap-2 h-full py-6">
-      {/* Phone */}
+    <div ref={ref} className="flex items-end justify-center gap-3 h-full py-6">
       <svg className="device opacity-0" viewBox="0 0 40 85" width="40" height="85">
         <rect x="2" y="1" width="36" height="83" rx="4" fill="var(--color-border)" />
         <rect x="5" y="4" width="30" height="70" rx="1.5" fill="var(--color-background)" />
         <rect x="17" y="77" width="6" height="2" rx="1" fill="var(--color-muted)" opacity="0.4" />
       </svg>
-      {/* Tablet */}
       <svg className="device opacity-0" viewBox="0 0 60 80" width="60" height="80">
         <rect x="2" y="1" width="56" height="78" rx="5" fill="var(--color-border)" />
         <rect x="6" y="4" width="46" height="65" rx="2" fill="var(--color-background)" />
         <rect x="27" y="72" width="6" height="2" rx="1" fill="var(--color-muted)" opacity="0.4" />
       </svg>
-      {/* Monitor */}
       <svg className="device opacity-0" viewBox="0 0 80 70" width="80" height="70">
         <rect x="2" y="2" width="76" height="52" rx="3" fill="var(--color-border)" />
         <rect x="5" y="5" width="70" height="46" rx="1.5" fill="var(--color-background)" />
@@ -124,16 +113,13 @@ function CssInspectorIllustration() {
   return (
     <div ref={ref} className="flex items-center justify-center h-full py-6">
       <svg viewBox="0 0 200 120" className="w-48 h-28" fill="none">
-        {/* Element being inspected */}
         <rect x="30" y="35" width="90" height="50" rx="4" fill="var(--color-border)" opacity="0.3" />
-        {/* Highlight overlays */}
         <rect className="hl" x="30" y="35" width="90" height="50" rx="4"
           fill="#03a9f4" fillOpacity="0.12" stroke="#03a9f4" strokeWidth="1" opacity="0" />
         <rect className="hl" x="35" y="42" width="80" height="36" rx="2"
           fill="#22C55E" fillOpacity="0.08" stroke="#22C55E" strokeWidth="1" opacity="0" />
         <rect className="hl" x="40" y="48" width="70" height="24" rx="2"
           fill="#3B82F6" fillOpacity="0.08" stroke="#3B82F6" strokeWidth="1" opacity="0" />
-        {/* Tooltip */}
         <g className="tip" opacity="0">
           <rect x="130" y="12" width="62" height="42" rx="4" fill="var(--color-background)"
             stroke="var(--color-border)" strokeWidth="1" />
@@ -161,8 +147,8 @@ function ColorPickerIllustration() {
     const label = el.querySelector<HTMLElement>('.hex-label');
     if (!cursor || !swatch || !label) return;
 
-    const tl = createTimeline({ defaults: { ease: 'easeOutExpo' } });
-    tl.add(cursor, { translateX: [0, 55], translateY: [0, 35], duration: 600 }, 0)
+    const tl = createTimeline({ defaults: { ease: 'easeOutExpo' } })
+      .add(cursor, { translateX: [0, 55], translateY: [0, 35], duration: 600 }, 0)
       .add(cursor, { scale: [1, 0.8, 1], duration: 200 }, 600)
       .add(swatch, { scale: [0, 1], opacity: [0, 1], duration: 400 }, 800)
       .add(label, { opacity: [0, 1], translateY: [6, 0], duration: 250 }, 1000);
@@ -181,16 +167,13 @@ function ColorPickerIllustration() {
             <stop offset="100%" stopColor="#1E3A5F" />
           </radialGradient>
         </defs>
-        {/* Target circle */}
         <circle cx="55" cy="60" r="36" fill="url(#cg)" stroke="var(--color-border)" strokeWidth="1" />
-        {/* Color swatch */}
         <g className="swatch" opacity="0" style={{ transformOrigin: '130px 50px' }}>
           <rect x="110" y="30" width="55" height="50" rx="6" fill="var(--color-background)"
             stroke="var(--color-border)" strokeWidth="1" />
           <rect x="118" y="38" width="18" height="18" rx="3" fill="#03a9f4" />
           <text x="142" y="49" fontSize="8" fill="var(--color-muted)" className="font-mono">HEX</text>
         </g>
-        {/* Cursor */}
         <g className="cursor" transform="translate(0,0)">
           <path d="M0 0 L10 18 L5 20 L9 30 L5 32 L2 22 L0 26 Z"
             fill="var(--color-primary)" opacity="0.7" />
@@ -255,7 +238,7 @@ function PerformanceIllustration() {
     const el = ref.current;
     if (!el) return;
     const bars = el.querySelectorAll<HTMLElement>('.p-bar');
-    const arc = el.querySelector<HTMLElement>('.p-arc');
+    const arcs = el.querySelectorAll<HTMLElement>('.p-arc');
     if (!bars.length) return;
 
     const tl = createTimeline()
@@ -265,12 +248,11 @@ function PerformanceIllustration() {
         duration: 500,
         delay: stagger(100),
         ease: 'easeOutExpo',
-        transformOrigin: 'center bottom',
       }, 0);
 
     let arcAnim: ReturnType<typeof animate> | null = null;
-    if (arc) {
-      arcAnim = animate(arc, {
+    if (arcs.length) {
+      arcAnim = animate(arcs, {
         strokeDashoffset: [300, 0],
         duration: 1200,
         delay: 600,
@@ -284,7 +266,6 @@ function PerformanceIllustration() {
   return (
     <div ref={ref} className="flex items-center justify-center h-full py-6">
       <svg viewBox="0 0 200 120" className="w-48 h-28" fill="none">
-        {/* Gauge arc */}
         <path className="p-arc"
           d="M30 80 A70 70 0 0 1 170 80"
           stroke="var(--color-border)" strokeWidth="4" strokeLinecap="round"
@@ -293,18 +274,14 @@ function PerformanceIllustration() {
           d="M30 80 A70 70 0 0 1 170 80"
           stroke="#03a9f4" strokeWidth="4" strokeLinecap="round"
           strokeDasharray="180" strokeDashoffset="300" />
-        {/* Bars */}
-        <g transform="translate(0,0)">
-          <rect className="p-bar" x="40" y="60" width="22" height="44" rx="2"
-            fill="#03a9f4" opacity="0" style={{ transformOrigin: '40px 104px' }} />
-          <rect className="p-bar" x="68" y="72" width="22" height="32" rx="2"
-            fill="#03a9f4" fillOpacity="0.6" opacity="0" style={{ transformOrigin: '68px 104px' }} />
-          <rect className="p-bar" x="96" y="66" width="22" height="38" rx="2"
-            fill="#03a9f4" fillOpacity="0.4" opacity="0" style={{ transformOrigin: '96px 104px' }} />
-          <rect className="p-bar" x="124" y="52" width="22" height="52" rx="2"
-            fill="#03a9f4" fillOpacity="0.8" opacity="0" style={{ transformOrigin: '124px 104px' }} />
-        </g>
-        {/* Labels */}
+        <rect className="p-bar" x="40" y="60" width="22" height="44" rx="2"
+          fill="#03a9f4" opacity="0" style={{ transformOrigin: '51px 104px' }} />
+        <rect className="p-bar" x="68" y="72" width="22" height="32" rx="2"
+          fill="#03a9f4" fillOpacity="0.6" opacity="0" style={{ transformOrigin: '79px 104px' }} />
+        <rect className="p-bar" x="96" y="66" width="22" height="38" rx="2"
+          fill="#03a9f4" fillOpacity="0.4" opacity="0" style={{ transformOrigin: '107px 104px' }} />
+        <rect className="p-bar" x="124" y="52" width="22" height="52" rx="2"
+          fill="#03a9f4" fillOpacity="0.8" opacity="0" style={{ transformOrigin: '135px 104px' }} />
         <text x="42" y="116" fontSize="6" fill="var(--color-muted)" className="font-mono">FCP</text>
         <text x="70" y="116" fontSize="6" fill="var(--color-muted)" className="font-mono">LCP</text>
         <text x="98" y="116" fontSize="6" fill="var(--color-muted)" className="font-mono">CLS</text>
@@ -338,16 +315,13 @@ function ConsolePanelIllustration() {
   return (
     <div ref={ref} className="flex items-center justify-center h-full py-6">
       <svg viewBox="0 0 200 100" className="w-48 h-24" fill="none">
-        {/* Terminal window */}
         <rect x="10" y="4" width="180" height="92" rx="4" fill="var(--color-background)"
           stroke="var(--color-border)" strokeWidth="1" />
-        {/* Title bar */}
         <rect x="10" y="4" width="180" height="18" rx="4" fill="var(--color-border)" />
         <circle cx="22" cy="13" r="3" fill="#EF4444" />
         <circle cx="32" cy="13" r="3" fill="#F59E0B" />
         <circle cx="42" cy="13" r="3" fill="#22C55E" />
         <text x="90" y="16" fontSize="7" fill="var(--color-muted)" textAnchor="middle" className="font-mono">Console</text>
-        {/* Log lines */}
         <text className="c-line font-mono" x="18" y="38" fontSize="7" fill="#22C55E" opacity="0">$ npm run dev</text>
         <text className="c-line font-mono" x="18" y="50" fontSize="7" fill="var(--color-muted)" opacity="0">&gt; viewport@0.0.1 dev</text>
         <text className="c-line font-mono" x="18" y="62" fontSize="7" fill="var(--color-muted)" opacity="0">  Local: http://localhost:1234</text>
@@ -374,7 +348,6 @@ function NetworkWaterfallIllustration() {
         duration: 400,
         delay: stagger(180),
         ease: 'easeOutExpo',
-        transformOrigin: 'left center',
       }, 0);
 
     return () => { tl.revert(); };
@@ -383,35 +356,24 @@ function NetworkWaterfallIllustration() {
   return (
     <div ref={ref} className="flex items-center justify-center h-full py-6">
       <svg viewBox="0 0 200 110" className="w-48 h-26" fill="none">
-        {/* Waterfall bars */}
-        <g transform="translate(0,0)">
-          <text x="12" y="18" fontSize="6" fill="var(--color-muted)" className="font-mono">index.html</text>
-          <rect className="n-bar" x="60" y="10" width="50" height="10" rx="2"
-            fill="#3B82F6" opacity="0" style={{ transformOrigin: '60px 10px' }} />
-          <circle cx="118" cy="15" r="3" fill="var(--color-muted)" opacity="0.3" />
-
-          <text x="12" y="36" fontSize="6" fill="var(--color-muted)" className="font-mono">style.css</text>
-          <rect className="n-bar" x="60" y="28" width="72" height="10" rx="2"
-            fill="#8B5CF6" opacity="0" style={{ transformOrigin: '60px 28px' }} />
-
-          <text x="12" y="54" fontSize="6" fill="var(--color-muted)" className="font-mono">app.js</text>
-          <rect className="n-bar" x="60" y="46" width="95" height="10" rx="2"
-            fill="#22C55E" opacity="0" style={{ transformOrigin: '60px 46px' }} />
-
-          <text x="12" y="72" fontSize="6" fill="var(--color-muted)" className="font-mono">api/data</text>
-          <rect className="n-bar" x="60" y="64" width="80" height="10" rx="2"
-            fill="#F59E0B" opacity="0" style={{ transformOrigin: '60px 64px' }} />
-
-          <text x="12" y="90" fontSize="6" fill="var(--color-muted)" className="font-mono">logo.png</text>
-          <rect className="n-bar" x="60" y="82" width="35" height="10" rx="2"
-            fill="#03a9f4" opacity="0" style={{ transformOrigin: '60px 82px' }} />
-
-          {/* Time axis */}
-          <line x1="60" y1="4" x2="200" y2="4" stroke="var(--color-border)" strokeWidth="0.5" />
-          <text x="100" y="3" fontSize="5" fill="var(--color-muted)" textAnchor="middle">50ms</text>
-          <text x="150" y="3" fontSize="5" fill="var(--color-muted)" textAnchor="middle">100ms</text>
-          <text x="200" y="3" fontSize="5" fill="var(--color-muted)" textAnchor="middle">150ms</text>
-        </g>
+        <text x="12" y="18" fontSize="6" fill="var(--color-muted)" className="font-mono">index.html</text>
+        <rect className="n-bar" x="60" y="10" width="50" height="10" rx="2"
+          fill="#3B82F6" opacity="0" style={{ transformOrigin: 'left center' }} />
+        <text x="12" y="36" fontSize="6" fill="var(--color-muted)" className="font-mono">style.css</text>
+        <rect className="n-bar" x="60" y="28" width="72" height="10" rx="2"
+          fill="#8B5CF6" opacity="0" style={{ transformOrigin: 'left center' }} />
+        <text x="12" y="54" fontSize="6" fill="var(--color-muted)" className="font-mono">app.js</text>
+        <rect className="n-bar" x="60" y="46" width="95" height="10" rx="2"
+          fill="#22C55E" opacity="0" style={{ transformOrigin: 'left center' }} />
+        <text x="12" y="72" fontSize="6" fill="var(--color-muted)" className="font-mono">api/data</text>
+        <rect className="n-bar" x="60" y="64" width="80" height="10" rx="2"
+          fill="#F59E0B" opacity="0" style={{ transformOrigin: 'left center' }} />
+        <text x="12" y="90" fontSize="6" fill="var(--color-muted)" className="font-mono">logo.png</text>
+        <rect className="n-bar" x="60" y="82" width="35" height="10" rx="2"
+          fill="#03a9f4" opacity="0" style={{ transformOrigin: 'left center' }} />
+        <line x1="60" y1="4" x2="200" y2="4" stroke="var(--color-border)" strokeWidth="0.5" />
+        <text x="100" y="3" fontSize="5" fill="var(--color-muted)" textAnchor="middle">50ms</text>
+        <text x="150" y="3" fontSize="5" fill="var(--color-muted)" textAnchor="middle">100ms</text>
       </svg>
     </div>
   );
@@ -441,12 +403,9 @@ function AccessibilityAuditIllustration() {
   return (
     <div ref={ref} className="flex items-center justify-center h-full py-6">
       <svg viewBox="0 0 180 110" className="w-44 h-26" fill="none">
-        {/* Shield icon */}
         <path d="M90 8 L140 28 L140 52 C140 78 115 98 90 105 C65 98 40 78 40 52 L40 28 Z"
           fill="var(--color-background)" stroke="#22C55E" strokeWidth="1.5" opacity="0.7" />
         <text x="90" y="56" fontSize="10" fill="#22C55E" textAnchor="middle" fontWeight="bold">82</text>
-
-        {/* Checklist items */}
         <g className="a-item" opacity="0">
           <text x="14" y="36" fontSize="8" fill="#22C55E">✓</text>
           <text x="26" y="36" fontSize="7" fill="var(--color-muted)" className="font-mono">Heading structure</text>
@@ -495,7 +454,6 @@ function LighthouseIllustration() {
   return (
     <div ref={ref} className="flex items-center justify-center h-full py-6">
       <svg viewBox="0 0 200 100" className="w-48 h-24" fill="none">
-        {/* Score 1: Performance */}
         <circle cx="45" cy="52" r="28" stroke="var(--color-border)" strokeWidth="4" />
         <circle className="l-arc" cx="45" cy="52" r="28"
           stroke="#22C55E" strokeWidth="4" strokeLinecap="round"
@@ -503,7 +461,6 @@ function LighthouseIllustration() {
         <text x="45" y="56" fontSize="12" fill="var(--color-primary)" textAnchor="middle" fontWeight="bold">92</text>
         <text x="45" y="88" fontSize="6" fill="var(--color-muted)" textAnchor="middle" className="font-mono">Perf</text>
 
-        {/* Score 2: Accessibility */}
         <circle cx="100" cy="52" r="28" stroke="var(--color-border)" strokeWidth="4" />
         <circle className="l-arc" cx="100" cy="52" r="28"
           stroke="#F59E0B" strokeWidth="4" strokeLinecap="round"
@@ -511,7 +468,6 @@ function LighthouseIllustration() {
         <text x="100" y="56" fontSize="12" fill="var(--color-primary)" textAnchor="middle" fontWeight="bold">78</text>
         <text x="100" y="88" fontSize="6" fill="var(--color-muted)" textAnchor="middle" className="font-mono">Access</text>
 
-        {/* Score 3: Best Practices */}
         <circle cx="155" cy="52" r="28" stroke="var(--color-border)" strokeWidth="4" />
         <circle className="l-arc" cx="155" cy="52" r="28"
           stroke="#3B82F6" strokeWidth="4" strokeLinecap="round"
@@ -526,349 +482,141 @@ function LighthouseIllustration() {
 /* ── Feature Data ──────────────────────────────────────────── */
 
 const features: Feature[] = [
-  {
-    id: 'responsive',
-    name: 'Responsive Preview',
-    description: 'Preview any URL across devices — mobile, tablet, desktop, and TV. Sandboxed iframe with device presets, zoom, rotate, and a local URL proxy for localhost preview.',
-    subFeatures: [
-      { icon: CheckCircle, label: 'Sandboxed iframe with local URL proxy' },
-      { icon: CheckCircle, label: 'Device presets with realistic bezels' },
-      { icon: CheckCircle, label: 'Freely resize with drag handles' },
-      { icon: CheckCircle, label: 'Flip portrait / landscape' },
-      { icon: CheckCircle, label: 'Recent URLs from local storage' },
-    ],
-    enabled: true,
-    comingSoon: false,
-    illustration: () => <ResponsivePreviewIllustration />,
-  },
-  {
-    id: 'css-inspector',
-    name: 'CSS Inspector',
-    description: 'Hover to highlight elements, click to inspect. View computed styles, box model, and live editing with instant visual feedback.',
-    subFeatures: [
-      { icon: CheckCircle, label: 'Hover to highlight, click to inspect' },
-      { icon: CheckCircle, label: 'Computed CSS properties' },
-      { icon: CheckCircle, label: 'Box model visualization' },
-      { icon: CheckCircle, label: 'Flexbox & Grid debug overlays' },
-      { icon: CheckCircle, label: 'Live style editing' },
-    ],
-    enabled: true,
-    comingSoon: false,
-    illustration: () => <CssInspectorIllustration />,
-  },
-  {
-    id: 'color-picker',
-    name: 'Color Picker',
-    description: 'Extract colors from any element. View in HEX, RGB, or HSL with one-click copy. Auto-extract dominant colors from the page.',
-    subFeatures: [
-      { icon: CheckCircle, label: 'Click any element to extract color' },
-      { icon: CheckCircle, label: 'HEX / RGB / HSL formats' },
-      { icon: CheckCircle, label: 'Dominant color palette generator' },
-      { icon: CheckCircle, label: 'One-click copy' },
-    ],
-    enabled: true,
-    comingSoon: false,
-    illustration: () => <ColorPickerIllustration />,
-  },
-  {
-    id: 'dom-tree',
-    name: 'DOM Tree',
-    description: 'Interactive DOM tree with attribute editing, event listeners, and element search. Navigate the full hierarchy with ease.',
-    subFeatures: [
-      { icon: CheckCircle, label: 'Expand / collapse tree interactively' },
-      { icon: CheckCircle, label: 'Edit HTML attributes live' },
-      { icon: CheckCircle, label: 'View attached event handlers' },
-      { icon: CheckCircle, label: 'Find by tag, class, or ID' },
-    ],
-    enabled: true,
-    comingSoon: false,
-    illustration: () => <DomTreeIllustration />,
-  },
-  {
-    id: 'performance',
-    name: 'Performance Monitor',
-    description: 'Real-time Core Web Vitals, FPS counter, network timeline, and memory usage. Identify bottlenecks and optimize your site.',
-    subFeatures: [
-      { icon: CheckCircle, label: 'FCP, LCP, and CLS in real-time' },
-      { icon: CheckCircle, label: 'FPS counter & rendering monitor' },
-      { icon: CheckCircle, label: 'Request waterfall with latencies' },
-      { icon: CheckCircle, label: 'Heap size & GC cycles' },
-    ],
-    enabled: true,
-    comingSoon: false,
-    illustration: () => <PerformanceIllustration />,
-  },
-  {
-    id: 'console',
-    name: 'Console Panel',
-    description: 'Execute JavaScript in the iframe context. View logs, warnings, errors, and network info with syntax-highlighted output.',
-    subFeatures: [
-      { icon: CheckCircle, label: 'Run JS in iframe context' },
-      { icon: CheckCircle, label: 'Logs, warnings & errors' },
-      { icon: CheckCircle, label: 'Syntax-highlighted output' },
-      { icon: CheckCircle, label: 'Runtime error catching' },
-    ],
-    enabled: true,
-    comingSoon: true,
-    illustration: () => <ConsolePanelIllustration />,
-  },
-  {
-    id: 'network',
-    name: 'Network Waterfall',
-    description: 'Visualize all network requests with precise timing. View headers, response body, status codes, and identify slow bottlenecks.',
-    subFeatures: [
-      { icon: CheckCircle, label: 'Visual request waterfall' },
-      { icon: CheckCircle, label: 'Headers & response body' },
-      { icon: CheckCircle, label: 'Status codes & sizes' },
-      { icon: CheckCircle, label: 'Filter and search requests' },
-    ],
-    enabled: true,
-    comingSoon: true,
-    illustration: () => <NetworkWaterfallIllustration />,
-  },
-  {
-    id: 'accessibility',
-    name: 'Accessibility Audit',
-    description: 'Check for WCAG 2.1 violations, verify text contrast ratios, detect missing ARIA attributes, and generate detailed reports.',
-    subFeatures: [
-      { icon: CheckCircle, label: 'WCAG 2.1 violation detection' },
-      { icon: CheckCircle, label: 'Text contrast ratio checker' },
-      { icon: CheckCircle, label: 'ARIA attribute validation' },
-      { icon: CheckCircle, label: 'Detailed audit reports' },
-    ],
-    enabled: true,
-    comingSoon: true,
-    illustration: () => <AccessibilityAuditIllustration />,
-  },
-  {
-    id: 'lighthouse',
-    name: 'Lighthouse Integration',
-    description: 'Get Google Lighthouse performance metrics, SEO checks, best practices, and accessibility scores for both mobile and desktop.',
-    subFeatures: [
-      { icon: CheckCircle, label: 'Performance & SEO metrics' },
-      { icon: CheckCircle, label: 'Best practices analysis' },
-      { icon: CheckCircle, label: 'Mobile vs desktop audits' },
-      { icon: CheckCircle, label: 'Actionable recommendations' },
-    ],
-    enabled: true,
-    comingSoon: true,
-    illustration: () => <LighthouseIllustration />,
-  },
+  { id: 'responsive', name: 'Responsive Preview', enabled: true, comingSoon: false, illustration: () => <ResponsivePreviewIllustration /> },
+  { id: 'css-inspector', name: 'CSS Inspector', enabled: false, comingSoon: false, illustration: () => <CssInspectorIllustration /> },
+  { id: 'color-picker', name: 'Color Picker', enabled: false, comingSoon: false, illustration: () => <ColorPickerIllustration /> },
+  { id: 'dom-tree', name: 'DOM Tree', enabled: false, comingSoon: false, illustration: () => <DomTreeIllustration /> },
+  { id: 'performance', name: 'Performance Monitor', enabled: false, comingSoon: false, illustration: () => <PerformanceIllustration /> },
+  { id: 'console', name: 'Console Panel', enabled: false, comingSoon: true, illustration: () => <ConsolePanelIllustration /> },
+  { id: 'network', name: 'Network Waterfall', enabled: false, comingSoon: true, illustration: () => <NetworkWaterfallIllustration /> },
+  { id: 'accessibility', name: 'Accessibility Audit', enabled: false, comingSoon: true, illustration: () => <AccessibilityAuditIllustration /> },
+  { id: 'lighthouse', name: 'Lighthouse', enabled: false, comingSoon: true, illustration: () => <LighthouseIllustration /> },
 ];
-
-/* ── Tab Button ────────────────────────────────────────────── */
-
-function TabButton({
-  label,
-  active,
-  enabled,
-  comingSoon,
-  onClick,
-  refCallback,
-}: {
-  label: string;
-  active: boolean;
-  enabled: boolean;
-  comingSoon: boolean;
-  onClick: () => void;
-  refCallback: (el: HTMLButtonElement | null) => void;
-}) {
-  const isClickable = active || enabled;
-  
-  return (
-    <button
-      ref={refCallback}
-      onClick={isClickable ? onClick : undefined}
-      disabled={!isClickable}
-      className={`relative shrink-0 px-4 py-2 font-medium whitespace-nowrap transition-colors duration-200 ${
-        active
-          ? 'text-sm text-primary'
-          : enabled
-          ? 'text-sm text-muted cursor-pointer'
-          : comingSoon
-          ? 'text-xs text-muted opacity-25 cursor-not-allowed'
-          : 'text-sm text-muted opacity-40 cursor-not-allowed'
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
 
 /* ── Main Component ────────────────────────────────────────── */
 
-export default function FeaturesShowcase() {
+export default function ViewPortProject() {
   const [activeIdx, setActiveIdx] = useState(0);
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const indicatorRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const active = features[activeIdx];
 
   useEffect(() => {
-    const indicator = indicatorRef.current;
-    const tab = tabRefs.current[activeIdx];
-    if (!indicator || !tab) return;
-
-    const scroll = scrollRef.current;
-    const scrollLeft = scroll ? scroll.scrollLeft : 0;
-    const left = tab.offsetLeft - scrollLeft;
-    const w = tab.offsetWidth;
-
-    animate(indicator, {
-      left,
-      width: w,
-      duration: 300,
-      ease: 'easeOutExpo',
-    });
-  }, [activeIdx]);
-
-  useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
-
-    animate(el, {
+    const anim = animate(el, {
       opacity: [0, 1],
       translateY: [10, 0],
       duration: 250,
       ease: 'easeOutQuad',
     });
+    return () => { anim.revert(); };
   }, [activeIdx]);
 
-  const setTabRef = (i: number) => (el: HTMLButtonElement | null) => {
-    tabRefs.current[i] = el;
-  };
-
   return (
-    <section id="features-showcase" className="relative bg-background py-20 px-4 md:px-8">
-      <div className="mx-auto max-w-5xl">
-        {/* Section header */}
-        <div className="mb-10 text-center">
+    <section className="relative py-20 px-4 md:px-8 overflow-x-clip">
+      <div className="mx-auto max-w-6xl flex flex-col md:flex-row md:items-center md:gap-12">
+
+        {/* Left Column — static text */}
+        <div className="md:w-[40%] shrink-0 mb-10 md:mb-0">
           <span className="text-[10px] font-medium tracking-[0.22em] uppercase text-accent">
-            Features
+            Open Source Project
           </span>
-          <h2 className="mt-2 text-3xl md:text-4xl font-black italic text-primary leading-tight tracking-tight">
-            Everything you need<span className="text-accent">.</span>
+          <h2 className="mt-3 text-3xl md:text-4xl font-black italic text-primary leading-tight tracking-tight">
+            A toolkit built for developers<span className="text-accent">.</span>
           </h2>
-          <p className="mt-2 text-sm text-muted max-w-md mx-auto">
-            A growing toolkit for web developers. Tap any tab to explore.
+          <p className="mt-4 text-sm text-muted leading-relaxed max-w-sm">
+            ViewPort is a free, open-source web developer toolkit. Inspect, debug, and preview your work — all in one place, without switching tabs.
           </p>
+
+          <ul className="mt-6 space-y-2.5">
+            {[
+              'Preview any URL across devices',
+              'Inspect CSS, DOM, and layouts',
+              'Monitor performance in real time',
+              'Audit accessibility and Lighthouse scores',
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-2.5 text-sm text-muted">
+                <CheckCircle size={16} className="text-accent shrink-0 mt-0.5" weight="fill" />
+                {item}
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a
+              href="https://github.com/Wingky530/viewport"
+              className="inline-flex items-center px-4 py-2.5 text-sm font-semibold
+                border border-border text-muted rounded-lg
+                hover:text-primary hover:border-primary/20 transition-colors duration-200"
+            >
+              View on GitHub &rarr;
+            </a>
+            <a
+              href="#"
+              className="inline-flex items-center px-4 py-2.5 text-sm font-semibold
+                bg-accent text-background rounded-lg
+                hover:bg-accent-muted transition-colors duration-200"
+            >
+              Try ViewPort &rarr;
+            </a>
+          </div>
         </div>
 
-        {/* Tab bar */}
-        <div
-          ref={scrollRef}
-          className="relative flex overflow-x-auto border-b border-border mb-8 -mx-4 px-4 md:mx-0 md:px-0"
-        >
-          {features.map((f, i) => (
-            <TabButton
-              key={f.id}
-              label={f.name}
-              active={activeIdx === i}
-              enabled={f.enabled}
-              comingSoon={f.comingSoon}
-              onClick={() => setActiveIdx(i)}
-              refCallback={setTabRef(i)}
-            />
-          ))}
+        {/* Right Column — tabs + browser panel */}
+        <div className="md:w-[60%] min-w-0 md:mr-[-4rem]">
+
+          {/* Pill Tab Bar */}
           <div
-            ref={indicatorRef}
-            className="absolute bottom-0 h-[2px] bg-accent pointer-events-none"
-            style={{ left: 0, width: 0 }}
-          />
-        </div>
+            ref={scrollRef}
+            className="flex gap-1.5 overflow-x-auto pb-3 mb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          >
+            {features.map((f, i) => {
+              const isActive = activeIdx === i;
+              const isDisabled = !f.enabled && !f.comingSoon;
+              const isSoon = f.comingSoon;
 
-        {/* Content panel — key forces remount on tab switch */}
-        <div key={activeIdx} ref={contentRef} className="flex flex-col md:flex-row gap-8 md:gap-12">
-          {/* Illustration — first on mobile, right on md+ */}
-          <div className="order-first md:order-last md:w-1/2">
-            <div className="rounded-2xl border border-border bg-background overflow-hidden">
-              {/* Chrome top bar */}
-              <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border bg-background">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#22C55E]" />
-                <span className="ml-3 text-[10px] font-mono text-muted/60 truncate select-none">
-                  viewport.app/{active.id}
-                </span>
-              </div>
-              {/* Illustration */}
-              <div className="min-h-[180px] flex items-center justify-center p-4">
-                {active.illustration()}
-              </div>
-            </div>
+              return (
+                <button
+                  key={f.id}
+                  onClick={f.enabled ? () => setActiveIdx(i) : undefined}
+                  disabled={!f.enabled}
+                  className={`relative shrink-0 rounded-full px-4 py-1.5 text-xs font-medium whitespace-nowrap transition-colors duration-200 ${
+                    isActive
+                      ? 'bg-primary text-background'
+                      : isDisabled
+                      ? 'text-muted opacity-40 cursor-not-allowed'
+                      : isSoon
+                      ? 'text-muted opacity-20 cursor-not-allowed'
+                      : 'text-muted hover:text-primary cursor-pointer'
+                  }`}
+                >
+                  {f.name}
+                  {isSoon && (
+                    <span className="ml-1.5 text-[9px] px-1.5 py-0.5 rounded-full bg-border/50 text-muted">
+                      Soon
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Text panel — left on md+ */}
-          <div className="md:w-1/2 flex flex-col justify-center">
-            {/* Heading + Coming Soon badge */}
-            <div className="flex items-center gap-3 mb-3 flex-wrap">
-              <h3 className="text-2xl font-black italic text-primary leading-tight">
-                {active.name}
-              </h3>
-              {!active.enabled && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full
-                  border border-muted/20 text-muted bg-background font-medium">
-                  Coming Soon
-                </span>
-              )}
+          {/* Browser Chrome Panel */}
+          <div className="rounded-tl-xl rounded-bl-xl border border-border border-r-0 bg-background overflow-hidden">
+            {/* Top bar */}
+            <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#22C55E]" />
+              <span className="ml-3 text-[11px] font-mono text-muted/60 truncate select-none">
+                viewport.app/{active.id}
+              </span>
             </div>
-
-            <p className="text-sm text-muted leading-relaxed mb-6">
-              {active.description}
-            </p>
-
-            {/* Sub-feature list */}
-            <ul className="space-y-2 mb-8">
-              {active.subFeatures.map((sf, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-sm text-muted">
-                  <sf.icon
-                    size={16}
-                    className="text-accent shrink-0 mt-0.5"
-                    weight="fill"
-                  />
-                  {sf.label}
-                </li>
-              ))}
-            </ul>
-
-            {/* Buttons */}
-            <div className="flex flex-wrap gap-3">
-              {active.enabled ? (
-                <a href="/projects/viewport"
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold italic
-                    border border-border text-muted rounded-lg
-                    hover:text-primary hover:border-primary/20 transition-colors duration-200"
-                >
-                  Explore Feature
-                </a>
-              ) : (
-                <span
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold italic
-                    border border-border text-muted opacity-30 rounded-lg cursor-not-allowed"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  Explore Feature
-                </span>
-              )}
-              {active.enabled ? (
-                <a href="#"
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold italic
-                    bg-accent text-background rounded-lg
-                    hover:bg-accent-muted transition-colors duration-200"
-                >
-                  Try ViewPort &rarr;
-                </a>
-              ) : (
-                <span
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold italic
-                    bg-accent/20 text-muted opacity-30 rounded-lg cursor-not-allowed"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  Try ViewPort &rarr;
-                </span>
-              )}
+            {/* Illustration */}
+            <div key={activeIdx} ref={contentRef} className="min-h-[220px] flex items-center justify-center p-4">
+              {active.illustration()}
             </div>
           </div>
         </div>
