@@ -535,10 +535,10 @@ export default function ViewPortProject({ stars }: { stars: number | null }) {
   return (
     <section className="relative overflow-visible">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="pt-8 pb-8 px-4 md:px-8 mx-auto max-w-6xl flex flex-col md:flex-row md:items-start md:gap-12">
+      <div className="pt-8 pb-8 pl-5 pr-4 md:pl-[calc((100%-680px)/2)] md:pr-0 max-w-none flex flex-col md:flex-row md:items-start md:gap-12">
 
         {/* ── LEFT COLUMN: Project Overview ── */}
-        <div className="md:w-[40%] shrink-0 mb-12 md:-mb-16 md:sticky md:top-24 md:-mt-3 md:self-stretch">
+        <div className="md:w-[40%] shrink-0 mb-12 md:-mb-16 md:sticky md:top-24 md:-mt-3 md:self-stretch pr-5 md:pr-0">
           <div data-anim="label" className="flex items-center gap-2">
             <span className="text-[10px] font-medium tracking-[0.22em] uppercase text-accent">
               Open Source Project
@@ -581,10 +581,7 @@ export default function ViewPortProject({ stars }: { stars: number | null }) {
               href="https://github.com/Wingky530/viewport"
               className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold bg-accent text-background rounded-md hover:bg-accent-muted transition-colors duration-200"
             >
-              Try ViewPort
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M7 17l9-9M17 7v10"/>
-              </svg>
+              Try ViewPort  ↗
             </a>
           </div>
         </div>
@@ -592,7 +589,7 @@ export default function ViewPortProject({ stars }: { stars: number | null }) {
         {/* ── RIGHT COLUMN: Browser Mockup ── */}
         <div data-anim="right" className="md:w-[60%] min-w-0 ml-2 md:ml-0 -mr-4 md:-mr-8 -mb-12 md:-mb-16 relative h-auto">
           {/* Accent background bleed */}
-          <div className="absolute -inset-2 md:-inset-3 md:-bottom-1 bg-accent rounded-l-md" style={{ zIndex: 0 }} />
+          <div className="absolute -top-2 -bottom-2 -left-2 right-0 md:-inset-3 md:-bottom-1 bg-accent rounded-l-md" style={{ zIndex: 0 }} />
           {/* Tab Bar */}
           <div
             className="relative z-10 flex items-stretch overflow-x-auto overflow-y-hidden rounded-tl-md [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
@@ -672,7 +669,7 @@ export default function ViewPortProject({ stars }: { stars: number | null }) {
       </div>
 
       {/* Bottom divider + mask: accent squares as top-border of mask */}
-      <div className="relative z-20">
+      <div className="relative z-[2]">
         <div className="relative h-px bg-muted/30">
           <div className="absolute left-0 w-2 h-2 bg-accent -top-[3px]" />
           <div className="absolute right-0 w-2 h-2 bg-accent -top-[3px]" />

@@ -10,6 +10,7 @@ import Layout from '../layouts/Layout.astro';
 import JsonLd from '../components/JsonLd.astro';
 import Nav from '../components/Nav.astro';
 import ViewPortProject from '../components/ViewPortProject.tsx';
+import EsempeProject from '../components/EsempeProject.tsx';
 
 const res = await fetch('https://api.github.com/repos/Wingky530/viewport')
   .then(r => r.json())
@@ -30,6 +31,7 @@ const stars = res?.stargazers_count ?? null;
   }} />
   <Nav />
   <div class="min-h-screen w-full relative overflow-x-hidden">
+    <EsempeProject client:load />
     <ViewPortProject client:load stars={stars} />
   </div>
 </Layout>

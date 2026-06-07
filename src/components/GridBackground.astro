@@ -21,8 +21,8 @@
   }
 
   #grid-background > :global(div) {
-    border-right:  1px solid color-mix(in srgb, var(--color-border) 15%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 15%, transparent);
+    border-right:  1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 10%, transparent);
     opacity: 0;
     transform: translate(0, 0);
     transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1), opacity 1s ease-out;
@@ -50,6 +50,11 @@
     container.style.display = 'grid';
     container.style.gridTemplateColumns = `repeat(${cols}, ${CELL_SIZE}px)`;
     container.style.gridTemplateRows = `repeat(${rows}, ${CELL_SIZE}px)`;
+    // Center grid so it doesn't shift right
+    const offsetX = (cols * CELL_SIZE - W) / 2;
+    const offsetY = (rows * CELL_SIZE - H) / 2;
+    container.style.marginLeft = `-${offsetX}px`;
+    container.style.marginTop = `-${offsetY}px`;
 
     const frag = document.createDocumentFragment();
     for (let r = 0; r < rows; r++) {
@@ -68,10 +73,18 @@
 
    buildGrid();
 
-  // Handle grid entrance animation
+  // Show grid immediately if animation already played or not on homepage
+  const container = document.getElementById('grid-background');
+  const isHomePage = !!document.querySelector('#text-svg[data-is-home-page="true"]');
+  if (container && (!isHomePage || sessionStorage.getItem('wingky-anim-played'))) {
+    container.classList.add('active');
+  }
+
+  // Handle grid entrance animation (first homepage load only)
   window.addEventListener('grid-intro-anim', () => {
     const container = document.getElementById('grid-background');
     if (!container) return;
+    if (container.classList.contains('active')) return;
 
     const directions = ['left', 'right', 'top', 'bottom'];
     const randomDirection = directions[Math.floor(Math.random() * directions.length)];
@@ -84,13 +97,11 @@
       case 'bottom': transformStart = 'translateY(100%)';  break;
     }
 
-    // Apply initial transform to all grid cells
     const cells = container.querySelectorAll('div');
     cells.forEach(cell => {
       (cell as HTMLElement).style.transform = transformStart;
     });
 
-    // Trigger animation after a brief delay to ensure initial transform is applied
     requestAnimationFrame(() => {
       container.classList.add('active');
     });

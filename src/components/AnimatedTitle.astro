@@ -21,9 +21,11 @@ import path from 'node:path';
 interface Props {
   text: string;
   isHomePage: boolean;
+  resetAnim?: boolean;
+  staticLarge?: boolean;
 }
 
-const { text, isHomePage } = Astro.props;
+const { text, isHomePage, resetAnim = true, staticLarge = false } = Astro.props;
 
 const FS = 130;
 const FSU = 130;
@@ -89,7 +91,7 @@ const gridSvgClasses = [
 
 {
   isHomePage ? (
-    <a href="/" onclick="sessionStorage.removeItem('wingky-anim-played')"
+    <a href="/" onclick={resetAnim ? "sessionStorage.removeItem('wingky-anim-played')" : undefined}
       style="text-decoration:none;color:inherit">
       <div id="title-wrapper" class:list={wrapperClasses} style={wrapperStyle}>
         <svg id="grid-svg"
@@ -117,17 +119,18 @@ const gridSvgClasses = [
         <svg id="grid-svg"
           class:list={gridSvgClasses}
           style="opacity:0;overflow:visible"
-          width={navW} height={navH}
+          width={staticLarge ? homeW : navW} height={staticLarge ? homeH : navH}
           aria-hidden="true"></svg>
 
         <svg id="text-svg"
           data-glyphs={glyphsJson}
           data-text={text}
           data-is-home-page={String(isHomePage)}
+          data-static-large={String(staticLarge)}
           class="pointer-events-none"
           style="overflow:visible;display:block"
           viewBox={`0 0 ${finalTotalWU_d} ${SVG_HU_d}`}
-          width={navW} height={navH}
+          width={staticLarge ? homeW : navW} height={staticLarge ? homeH : navH}
           aria-hidden="true"></svg>
 
         <h1 class="sr-only">{text}</h1>
@@ -182,6 +185,7 @@ const gridSvgClasses = [
     const glyphs: { d: string; advance: number }[] = JSON.parse(textSvg.getAttribute('data-glyphs')!);
     const TEXT = textSvg.getAttribute('data-text')!;
     isHomePage = textSvg.getAttribute('data-is-home-page') === 'true';
+    const staticLarge = textSvg.getAttribute('data-static-large') === 'true';
     const DOT_IDX = TEXT.length - 1;
 
     const cssVars = getComputedStyle(document.documentElement);
@@ -256,7 +260,7 @@ const gridSvgClasses = [
 
     if (!isHomePage) {
       textSvg.style.opacity = '1';
-      const navScale = isMobile ? 0.15 : 0.18;
+      const navScale = staticLarge ? SCALE : (isMobile ? 0.15 : 0.18);
       pathEls.forEach((el, i) => {
         const xFinal = finalX[i] + (i === DOT_IDX ? DOT_SHIFT : 0);
         const s = i === DOT_IDX ? 0 : SKEW_FINAL;

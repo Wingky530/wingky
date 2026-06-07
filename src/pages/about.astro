@@ -4,7 +4,7 @@
  * Hierarchy through type alone. Entry animation via Anime.js v4.
  * Border lines animate last via scaleX. Respects prefers-reduced-motion.
  */
-import Nav from '../components/Nav.astro';
+import AnimatedTitle from '../components/AnimatedTitle.astro';
 import JsonLd from '../components/JsonLd.astro';
 import Layout from '../layouts/Layout.astro';
 ---
@@ -21,19 +21,16 @@ import Layout from '../layouts/Layout.astro';
       "https://discord.gg/PaNMq8Q2"
     ]
   }} />
-  <Nav minimal />
-  <main class="flex flex-col items-center px-5 pt-32 pb-24">
-    <article class="w-full max-w-[680px]">
+  <main class="flex flex-col items-center px-5 pt-16 pb-24">
+    <!-- Hero: centered logo + tagline -->
+    <div class="flex flex-col items-center text-center mb-20 md:mb-24">
+      <AnimatedTitle isHomePage={false} staticLarge={true} text="wingky." />
+      <h1 class="ab font-bold italic tracking-tighter leading-none text-primary mt-8" style="opacity:0;transform:translateY(20px);font-size:clamp(1.1rem, 3vw, 1.8rem);">
+        A VIBE CODER WHO GIVES A DAMN<span class="not-italic text-accent">.</span>
+      </h1>
+    </div>
 
-      <!-- 1. Hero -->
-      <section class="mb-32 md:mb-40">
-        <h1 class="ab font-bold italic whitespace-nowrap tracking-tighter leading-none text-primary" style="opacity:0;transform:translateY(20px);font-size:clamp(1.3rem, 3.8vw, 2.6rem);">
-          A VIBE CODER WHO GIVES A DAMN<span class="not-italic text-accent">.</span>
-        </h1>
-        <p class="ab mt-4 text-sm text-muted" style="opacity:0;transform:translateY(20px);">
-          Design, Align and Refine.
-        </p>
-      </section>
+    <article class="w-full max-w-[680px]">
 
       <!-- 2. Mobile Workshop + Philosophy -->
       <section class="mb-24 md:mb-32 w-full grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8 py-8">
@@ -68,7 +65,7 @@ import Layout from '../layouts/Layout.astro';
       </section>
 
       <!-- 3. Precision statement -->
-      <section class="mb-32 md:mb-40 md:ml-auto md:max-w-[600px]">
+      <section class="mb-24 md:mb-32 md:ml-auto md:max-w-[600px]">
         <h2 class="ab font-extrabold italic tracking-tighter leading-[1.05] text-primary" style="opacity:0;transform:translateY(20px);font-size:clamp(2.2rem, 7vw, 4rem);">
           PRECISION IS THE ONLY STANDARD<span class="not-italic text-accent">.</span>
         </h2>
@@ -185,10 +182,10 @@ import Layout from '../layouts/Layout.astro';
         </h2>
 
         <!-- Contact cards -->
-        <div class="grid grid-cols-2 gap-2 mb-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
           <!-- LinkedIn - full width -->
           <a href="https://www.linkedin.com/in/wingky530" target="_blank" rel="noopener noreferrer"
-             class="col-span-2 flex items-center gap-3 px-4 py-3 border border-workshop-border rounded-lg transition-colors duration-200 hover:border-muted no-underline group">
+             class="col-span-1 sm:col-span-2 flex items-center gap-3 px-4 py-3 border border-workshop-border rounded-lg transition-colors duration-200 hover:border-muted no-underline group">
             <span class="w-[30px] h-[30px] rounded-md border border-workshop-border flex items-center justify-center text-muted flex-shrink-0 transition-all duration-200 group-hover:bg-[#0A66C2] group-active:bg-[#0A66C2] group-hover:border-[#0A66C2] group-active:border-[#0A66C2] group-hover:text-white group-active:text-white">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45Z"/></svg>
             </span>
@@ -199,7 +196,7 @@ import Layout from '../layouts/Layout.astro';
           </a>
           <!-- Email - full width -->
           <a href="mailto:wingky530.id@gmail.com"
-             class="col-span-2 flex items-center gap-3 px-4 py-3 border border-workshop-border rounded-lg transition-colors duration-200 hover:border-muted no-underline group">
+             class="col-span-1 sm:col-span-2 flex items-center gap-3 px-4 py-3 border border-workshop-border rounded-lg transition-colors duration-200 hover:border-muted no-underline group">
             <span class="w-[30px] h-[30px] rounded-md border border-workshop-border flex items-center justify-center text-muted flex-shrink-0 transition-all duration-200 group-hover:bg-accent group-active:bg-accent group-hover:border-accent group-active:border-accent group-hover:text-background group-active:text-background">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h18a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm9 8.53L4.47 6 3.5 7.15 12 13.47l8.5-6.32L19.53 6 12 12.53Z"/></svg>
             </span>
@@ -235,7 +232,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- Donate (separated) -->
         <div class="mt-16">
           <p class="text-[0.7rem] uppercase tracking-[0.22em] text-muted mb-3">Support the Work</p>
-          <div class="flex items-center justify-between gap-4 px-5 py-4 border border-dashed border-workshop-border rounded-lg mb-24">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-5 py-4 border border-dashed border-workshop-border rounded-lg mb-24">
             <div>
               <div class="text-[0.875rem] font-semibold text-primary mb-0.5">Buy me a coffee</div>
               <div class="text-[0.775rem] text-muted leading-snug">If my work saved you time, consider supporting it.</div>
@@ -283,39 +280,34 @@ import Layout from '../layouts/Layout.astro';
       scale: [0.95, 1],
     }, 0);
 
-    tl.add('section:nth-of-type(1) p.ab', {
-      opacity: [0, 1],
-      translateY: [20, 0],
-    }, 80);
-
-    tl.add('section:nth-of-type(2) .ab', {
+    tl.add('section:nth-of-type(1) .ab', {
       opacity: [0, 1],
       translateY: [40, 0],
       translateX: [-20, 0],
     }, 150);
 
-    tl.add('section:nth-of-type(3) .ab', {
+    tl.add('section:nth-of-type(2) .ab', {
       opacity: [0, 1],
       translateY: [40, 0],
       translateX: [20, 0],
     }, 250);
 
-    tl.add('section:nth-of-type(4).ab', {
+    tl.add('section:nth-of-type(3).ab', {
       opacity: [0, 1],
       translateY: [40, 0],
     }, 350);
 
-    tl.add('section:nth-of-type(5).ab', {
+    tl.add('section:nth-of-type(4).ab', {
       opacity: [0, 1],
       translateY: [40, 0],
     }, 430);
 
-    tl.add('section:nth-of-type(6).ab', {
+    tl.add('section:nth-of-type(5).ab', {
       opacity: [0, 1],
       translateY: [40, 0],
     }, 510);
 
-    tl.add('section:nth-of-type(7).ab', {
+    tl.add('section:nth-of-type(6).ab', {
       opacity: [0, 1],
       translateY: [40, 0],
     }, 590);
@@ -333,6 +325,8 @@ import Layout from '../layouts/Layout.astro';
     const el = badge as HTMLElement;
     const bg = el.dataset.bg!;
     const img = el.querySelector('img') as HTMLImageElement | null;
+    const origColor = el.style.color;
+    const origBorder = el.style.borderColor;
     const apply = () => {
       el.style.backgroundColor = bg;
       el.style.color = '#fff';
@@ -341,8 +335,8 @@ import Layout from '../layouts/Layout.astro';
     };
     const reset = () => {
       el.style.backgroundColor = '';
-      el.style.color = '';
-      el.style.borderColor = '';
+      el.style.color = origColor;
+      el.style.borderColor = origBorder;
       if (img) img.style.filter = '';
     };
     el.addEventListener('pointerdown', apply);

@@ -84,6 +84,18 @@
     opacity: 0;
     pointer-events: none;
   }
+  :global([data-scrollable="true"]) #theme-toggle {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    margin: 32px auto;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  :global([data-scrollable="true"]) #theme-toggle:hover {
+    transform: scale(1.15);
+  }
   #theme-toggle:hover {
     transform: translateX(-50%) scale(1.15);
   }
