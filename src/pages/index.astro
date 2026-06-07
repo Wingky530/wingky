@@ -1,10 +1,34 @@
 ---
-import Canvas from '../components/Canvas.astro';
+/**
+ * index.astro — Landing page.
+ *
+ * Full-viewport centered layout with animated SVG title, nav links, and tagline.
+ * Nav and description start hidden; AnimatedTitle reveals them via timeline.
+ * Includes JSON-LD structured data for SEO.
+ */
 import Layout from '../layouts/Layout.astro';
+import JsonLd from '../components/JsonLd.astro';
 import AnimatedTitle from '../components/AnimatedTitle.astro';
+// import GridBackground from '../components/GridBackground.astro';
 ---
-<Layout>
-  <Canvas />
+<Layout title="Wingky — A vibe coder who actually gives a damn." description="A vibe coder who actually gives a damn.">
+  <JsonLd data={{
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Wingky",
+    "url": "https://wingky.vercel.app",
+    "description": "A vibe coder who actually gives a damn.",
+    "author": {
+      "@type": "Person",
+      "name": "Wingky",
+      "url": "https://wingky.vercel.app",
+      "sameAs": [
+        "https://github.com/Wingky530",
+        "https://www.linkedin.com/in/wingky530"
+      ]
+    }
+  }} />
+  {/* <GridBackground /> */}
 
   <div class="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-4">
     <div class="flex flex-col items-center justify-center z-10 w-full text-center">
@@ -13,7 +37,7 @@ import AnimatedTitle from '../components/AnimatedTitle.astro';
         style="opacity:0;transform:translateY(-20px)"
         class="mb-10 flex space-x-12 text-sm tracking-widest text-muted">
         <a href="/projects" class="hover:text-primary transition-colors duration-200">PROJECTS</a>
-        <a href="/contact"  class="hover:text-primary transition-colors duration-200">CONTACT</a>
+        <a href="/about"  class="hover:text-primary transition-colors duration-200">ABOUT</a>
       </nav>
 
       <AnimatedTitle isHomePage={true} text="wingky." />

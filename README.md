@@ -7,17 +7,19 @@
 
 
 
-**Design, Align and refine.**
+**"A vibe coder who actually gives a damn."**
 
 ## About
 
-Personal portfolio built with a focus on motion and detail, animated SVG title drawn stroke-by-stroke, a black hole theme toggle with radial reveal, per-cell grid ripple, and a canvas particle system that reacts to theme changes. Dark by default.
+Personal portfolio built with a focus on motion and detail — animated SVG title drawn stroke-by-stroke, a black hole theme toggle with radial reveal, per-cell grid ripple, and a canvas particle system that reacts to theme changes. Dark by default.
 
 ### Built With
 
 * [![Astro][Astro.dev]][Astro-url]
+* [![React][React.dev]][React-url]
 * [![Tailwind CSS][TailwindCSS.com]][TailwindCSS-url]
-* [![Anime.js][Animejs.com]][Animejs-url]
+* [![Anime.js][Animejs.com]][Animejs-url] (v4)
+* [![OpenType.js][OpenType.js.org]][OpenType.js-url]
 * [![PNPM][PNPM.io]][PNPM-url]
 
 ### Key Features
@@ -52,7 +54,7 @@ pnpm build
 
 # Preview production build
 pnpm preview
-```
+\```
 
 ### Forking This Portfolio
 
@@ -67,7 +69,7 @@ pnpm preview
 
 ## Project Structure
 
-```
+\```
 src/
 ├── components/
 │   ├── AnimatedTitle.astro   # SVG title with stroke-draw animation
@@ -78,13 +80,22 @@ src/
 │   └── ThemeToggle.astro     # Black hole theme toggle + overlay
 ├── layouts/
 │   └── Layout.astro          # Base HTML layout
+├── components/
+│   ├── AnimatedTitle.astro   # SVG title with stroke-draw animation
+│   ├── Canvas.astro          # Particle background
+│   ├── GridBackground.astro  # Grid lines (background texture)
+│   ├── GridRipple.astro      # Grid ripple flash layer
+│   ├── Nav.astro             # Navigation bar
+│   ├── ThemeToggle.astro     # Black hole theme toggle + overlay
+│   └── ViewPortProject.tsx   # React island for ViewPort features
+├── layouts/
+│   └── Layout.astro          # Base HTML layout
 ├── pages/
 │   ├── index.astro           # Landing page
-│   ├── projects.astro        # Projects page
-│   └── contact.astro         # Contact page
+│   └── projects.astro        # Projects page
 └── styles/
     └── global.css            # Theme variables, fonts, base styles
-```
+\```
 
 ## Projects
 
@@ -105,7 +116,11 @@ Distributed under the MIT License. See `LICENSE` for more information.
 [TailwindCSS-url]: https://tailwindcss.com/
 [PNPM.io]: https://img.shields.io/badge/pnpm-F69220?style=for-the-badge&logo=pnpm&logoColor=white
 [PNPM-url]: https://pnpm.io/
-[Animejs.com]: https://img.shields.io/badge/Anime.js-FC4F4E?style=for-the-badge&logoColor=white
+[Animejs.com]: https://img.shields.io/badge/Anime.js-FF6B6B?style=for-the-badge&logoColor=white
 [Animejs-url]: https://animejs.com/
+[React.dev]: https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=white
+[React-url]: https://react.dev
+[OpenType.js.org]: https://img.shields.io/badge/OpenType.js-555555?style=for-the-badge&logoColor=white
+[OpenType.js-url]: https://opentype.js.org/
 
-<p align="right"><a href="#readme-top">back to top</a></p>
+<p align="right">(<a href="#readme-top">back to top</a>)</p>

@@ -21,6 +21,7 @@
 
   #grid-ripple > :global(div) {
     background-color: transparent;
+    will-change: background-color;
   }
 </style>
 
@@ -69,22 +70,21 @@
     if (!cells.length) return;
 
     const isOutward = currentTheme === 'dark';
-    // Outward: light color (contrast against dark overlay)
-    // Inward: dark color (contrast against light bg)
     const flashColor = isOutward ? '235,235,223' : '37,36,34';
+    const isMobile = window.innerWidth < 768;
 
-    // Calculate max distance for inverted delay
     const maxDist = Math.hypot(
       Math.max(x, window.innerWidth - x),
       Math.max(y, window.innerHeight - y)
     );
 
-    // Dark mode (white hole) → ripple keluar dari tombol
-    // Light mode (black hole) → ripple masuk ke tombol
-
     animate(cells, {
-      backgroundColor: [`rgba(${flashColor},0)`, `rgba(${flashColor},1)`, `rgba(${flashColor},0)`],
-      duration: 1200,
+      backgroundColor: [
+        `rgba(${flashColor},0)`,
+        `rgba(${flashColor},${isMobile ? 1 : 0.8})`,
+        `rgba(${flashColor},0)`
+      ],
+      duration: isMobile ? 1800 : 1200,
       ease: 'outQuad',
       delay: (_el: Element, i: number) => {
         const el = _el as HTMLElement;
@@ -92,7 +92,8 @@
         const dx = cr.left + cr.width / 2 - x;
         const dy = cr.top + cr.height / 2 - y;
         const dist = Math.hypot(dx, dy);
-        return isOutward ? dist * 0.8 : (maxDist - dist) * 0.8;
+        const factor = isMobile ? 1.2 : 0.8;
+        return isOutward ? dist * factor : (maxDist - dist) * factor;
       },
     });
   }) as EventListener);

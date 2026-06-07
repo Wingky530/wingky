@@ -1,4 +1,19 @@
 ---
+/**
+ * AnimatedTitle.astro
+ *
+ * SVG title rendered from font glyph paths via opentype.js.
+ * On the homepage, plays a stroke-draw intro animation with construction grid
+ * lines, then reveals nav, description, and theme toggle via timeline.
+ * On sub-pages, renders as a static clickable logo link.
+ *
+ * ── Blocks ──
+ * - Font parsing       Extracts glyph paths from TTF at build time
+ * - SVG layout         Calculates glyph positions (desktop + mobile responsive)
+ * - grid-svg           Decorative construction lines that fade out post-animation
+ * - stroke-draw anim   Sequential path stroke animation using Anime.js v4 timeline
+ * - themechange        Updates stroke/fill color to match current theme
+ */
 import opentype from 'opentype.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -64,7 +79,7 @@ const wrapperClasses = isHomePage
   : ["flex items-center justify-center select-none"];
 const wrapperStyle = isHomePage
   ? "view-transition-name: wingky-title"
-  : "view-transition-name: wingky-title; position: fixed; top: 24px; left: 24px; z-index: 20;";
+  : "view-transition-name: wingky-title";
 
 const gridSvgClasses = [
   "pointer-events-none",
@@ -439,7 +454,7 @@ const gridSvgClasses = [
     tl.add(gridSvg,      { opacity: [1,0], duration: 400, ease: 'outCubic' });
     tl.add('#nav-links', { opacity: [0,1], translateY: [-20,0], duration: 500, ease: 'outCubic' }, '-=250');
     tl.add('#theme-toggle', { opacity: [0,1], duration: 400, ease: 'outCubic', onComplete() { const el = document.getElementById('theme-toggle'); if (el) el.style.pointerEvents = 'auto'; } }, '-=350');
-    tl.add('#desc-text', { opacity: [0,1], translateY: [20,0],  duration: 500, ease: 'outCubic', onComplete() { sessionStorage.setItem('wingky-anim-played', '1'); } }, '-=250');
+    tl.add('#desc-text', { opacity: [0,1], translateY: [20,0],  duration: 500, ease: 'outCubic', onComplete() { sessionStorage.setItem('wingky-anim-played', '1'); window.dispatchEvent(new CustomEvent('grid-intro-anim')); } }, '-=250');
   });
 
   function syncPathColors() {

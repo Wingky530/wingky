@@ -12,6 +12,7 @@
 
 <style>
   #grid-background {
+    display: none;
     position: fixed;
     inset: 0;
     pointer-events: none;
@@ -20,8 +21,16 @@
   }
 
   #grid-background > :global(div) {
-    border-right:  1px solid color-mix(in srgb, var(--color-border) 35%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 35%, transparent);
+    border-right:  1px solid color-mix(in srgb, var(--color-border) 15%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 15%, transparent);
+    opacity: 0;
+    transform: translate(0, 0);
+    transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1), opacity 1s ease-out;
+  }
+
+  #grid-background.active > :global(div) {
+    opacity: 1;
+    transform: translate(0, 0);
   }
 </style>
 
@@ -57,5 +66,33 @@
     resizeTimer = setTimeout(buildGrid, 150);
   });
 
-  buildGrid();
+   buildGrid();
+
+  // Handle grid entrance animation
+  window.addEventListener('grid-intro-anim', () => {
+    const container = document.getElementById('grid-background');
+    if (!container) return;
+
+    const directions = ['left', 'right', 'top', 'bottom'];
+    const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+    let transformStart = '';
+
+    switch (randomDirection) {
+      case 'left':   transformStart = 'translateX(-100%)'; break;
+      case 'right':  transformStart = 'translateX(100%)';  break;
+      case 'top':    transformStart = 'translateY(-100%)'; break;
+      case 'bottom': transformStart = 'translateY(100%)';  break;
+    }
+
+    // Apply initial transform to all grid cells
+    const cells = container.querySelectorAll('div');
+    cells.forEach(cell => {
+      (cell as HTMLElement).style.transform = transformStart;
+    });
+
+    // Trigger animation after a brief delay to ensure initial transform is applied
+    requestAnimationFrame(() => {
+      container.classList.add('active');
+    });
+  });
 </script>

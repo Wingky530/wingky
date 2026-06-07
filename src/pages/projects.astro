@@ -1,13 +1,35 @@
 ---
+/**
+ * projects.astro — Projects showcase page.
+ *
+ * Scrollable page listing open-source projects. Fetches GitHub star count
+ * at build time and passes it to the ViewPortProject React island.
+ * Includes JSON-LD CollectionPage structured data.
+ */
 import Layout from '../layouts/Layout.astro';
+import JsonLd from '../components/JsonLd.astro';
 import Nav from '../components/Nav.astro';
-import Canvas from '../components/Canvas.astro';
 import ViewPortProject from '../components/ViewPortProject.tsx';
+
+const res = await fetch('https://api.github.com/repos/Wingky530/viewport')
+  .then(r => r.json())
+  .catch(() => null);
+const stars = res?.stargazers_count ?? null;
 ---
-<Layout scrollable>
-  <Canvas />
+<Layout scrollable title="Projects — Wingky" description="Open-source projects and tools by Wingky.">
+  <JsonLd data={{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Projects — Wingky",
+    "description": "Open-source projects and tools by Wingky.",
+    "url": "https://wingky.vercel.app/projects",
+    "author": {
+      "@type": "Person",
+      "name": "Wingky"
+    }
+  }} />
   <Nav />
-  <div class="min-h-screen w-full relative">
-    <ViewPortProject client:load />
+  <div class="min-h-screen w-full relative overflow-x-hidden">
+    <ViewPortProject client:load stars={stars} />
   </div>
 </Layout>

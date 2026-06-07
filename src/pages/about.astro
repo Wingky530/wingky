@@ -1,0 +1,354 @@
+---
+/**
+ * About page — typography-driven, single-column prose.
+ * Hierarchy through type alone. Entry animation via Anime.js v4.
+ * Border lines animate last via scaleX. Respects prefers-reduced-motion.
+ */
+import Nav from '../components/Nav.astro';
+import JsonLd from '../components/JsonLd.astro';
+import Layout from '../layouts/Layout.astro';
+---
+<Layout scrollable title="About — Wingky" description="Independent developer. Motion, detail, and intentional design.">
+  <JsonLd data={{
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Wingky",
+    "url": "https://wingky.vercel.app",
+    "description": "Independent developer. Motion, detail, and intentional design.",
+    "sameAs": [
+      "https://github.com/Wingky530",
+      "https://www.linkedin.com/in/wingky530",
+      "https://discord.gg/PaNMq8Q2"
+    ]
+  }} />
+  <Nav minimal />
+  <main class="flex flex-col items-center px-5 pt-32 pb-24">
+    <article class="w-full max-w-[680px]">
+
+      <!-- 1. Hero -->
+      <section class="mb-32 md:mb-40">
+        <h1 class="ab font-bold italic whitespace-nowrap tracking-tighter leading-none text-primary" style="opacity:0;transform:translateY(20px);font-size:clamp(1.3rem, 3.8vw, 2.6rem);">
+          A VIBE CODER WHO GIVES A DAMN<span class="not-italic text-accent">.</span>
+        </h1>
+        <p class="ab mt-4 text-sm text-muted" style="opacity:0;transform:translateY(20px);">
+          Design, Align and Refine.
+        </p>
+      </section>
+
+      <!-- 2. Mobile Workshop + Philosophy -->
+      <section class="mb-24 md:mb-32 w-full grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8 py-8">
+        <div class="ab-line h-px bg-workshop-border col-span-full" style="transform:scaleX(0);transform-origin:left;"></div>
+        <div class="ab" style="opacity:0;transform:translateY(20px);">
+          <h2 class="text-xs uppercase tracking-[0.22em] text-muted mb-4">The Mobile Workshop</h2>
+          <dl class="space-y-2">
+            <div class="flex justify-between">
+              <dt class="text-muted text-sm">Hardware</dt>
+              <dd class="text-primary font-medium text-sm">Poco F6</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-muted text-sm">Environment</dt>
+              <dd class="text-primary font-medium text-sm">Termux</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-muted text-sm">Workflow</dt>
+              <dd class="text-primary font-medium text-sm">Vite / Astro / PNPM</dd>
+            </div>
+          </dl>
+        </div>
+        <div class="ab" style="opacity:0;transform:translateY(20px);">
+          <h2 class="text-xs uppercase tracking-[0.22em] text-muted mb-4">Philosophy</h2>
+          <p class="text-sm leading-relaxed text-muted max-w-[65ch]">
+            I build things on my phone. Not because it's a gimmick, but because it forces a level of discipline and constraint that makes the end result better.
+          </p>
+          <p class="text-sm leading-relaxed text-muted mt-4 max-w-[65ch]">
+            <strong class="text-primary">Bad UX is not a preference—it's a failure.</strong>
+          </p>
+        </div>
+        <div class="ab-line h-px bg-workshop-border col-span-full" style="transform:scaleX(0);transform-origin:left;"></div>
+      </section>
+
+      <!-- 3. Precision statement -->
+      <section class="mb-32 md:mb-40 md:ml-auto md:max-w-[600px]">
+        <h2 class="ab font-extrabold italic tracking-tighter leading-[1.05] text-primary" style="opacity:0;transform:translateY(20px);font-size:clamp(2.2rem, 7vw, 4rem);">
+          PRECISION IS THE ONLY STANDARD<span class="not-italic text-accent">.</span>
+        </h2>
+        <p class="ab mt-6 text-sm leading-relaxed text-muted max-w-[56ch]" style="opacity:0;transform:translateY(20px);">
+          From animation timing to touch interactions, every detail is considered. It's not just about writing code; it's about crafting an experience that feels intentional and seamless on any device.
+        </p>
+      </section>
+
+      <!-- 4. How I Work -->
+      <section class="ab mb-24 md:mb-32" style="opacity:0;transform:translateY(20px);">
+        <h2 class="font-extrabold italic tracking-tighter leading-none text-primary mb-7" style="font-size:clamp(1.8rem, 5vw, 2.8rem);">
+          HOW I WORK<span class="not-italic text-accent">.</span>
+        </h2>
+        <ul>
+          <li class="py-5 grid grid-cols-1 md:grid-cols-[160px_1fr] gap-1 md:gap-6 items-baseline">
+            <div class="ab-line h-px bg-workshop-border col-span-full mb-5" style="transform:scaleX(0);transform-origin:left;"></div>
+            <span class="text-[0.7rem] uppercase tracking-[0.22em] text-muted">Constraint first</span>
+            <span class="text-sm leading-relaxed text-muted">
+              <strong class="text-primary font-semibold block mb-0.5">Mobile as a forcing function.</strong>
+              Every project is developed and tested on a phone. If it's painful on the constraint, it's wrong on the desktop.
+            </span>
+          </li>
+          <li class="py-5 grid grid-cols-1 md:grid-cols-[160px_1fr] gap-1 md:gap-6 items-baseline">
+            <div class="ab-line h-px bg-workshop-border col-span-full mb-5" style="transform:scaleX(0);transform-origin:left;"></div>
+            <span class="text-[0.7rem] uppercase tracking-[0.22em] text-muted">Motion with purpose</span>
+            <span class="text-sm leading-relaxed text-muted">
+              <strong class="text-primary font-semibold block mb-0.5">Animation reveals structure.</strong>
+              Timing, easing, and stagger are considered alongside layout — not bolted on at the end.
+            </span>
+          </li>
+          <li class="py-5 grid grid-cols-1 md:grid-cols-[160px_1fr] gap-1 md:gap-6 items-baseline">
+            <div class="ab-line h-px bg-workshop-border col-span-full mb-5" style="transform:scaleX(0);transform-origin:left;"></div>
+            <span class="text-[0.7rem] uppercase tracking-[0.22em] text-muted">Anti-slop rigor</span>
+            <span class="text-sm leading-relaxed text-muted">
+              <strong class="text-primary font-semibold block mb-0.5">Every decision is questioned.</strong>
+              Would an AI have done this? If yes, rewrite it. Templates are starting points, not destinations.
+            </span>
+          </li>
+          <div class="ab-line h-px bg-workshop-border" style="transform:scaleX(0);transform-origin:left;"></div>
+        </ul>
+      </section>
+
+      <!-- 5. Selected Work -->
+      <section class="ab mb-24 md:mb-32" style="opacity:0;transform:translateY(20px);">
+        <h2 class="text-[0.7rem] uppercase tracking-[0.22em] text-muted mb-5">Selected Work</h2>
+        <ul>
+          <div class="ab-line h-px bg-workshop-border" style="transform:scaleX(0);transform-origin:left;"></div>
+          <li>
+            <a href="/projects" class="py-5 grid grid-cols-[1fr_auto] gap-4 items-center group no-underline transition-colors duration-200 hover:bg-primary/5 -mx-3 px-3 rounded-md">
+              <div>
+                <div class="text-base font-semibold text-primary transition-colors duration-200 group-hover:text-accent mb-1">ViewPort</div>
+                <div class="text-[0.8125rem] leading-snug text-muted">Open-source web developer toolkit. Scroll-driven hero, touch-first interactions, Astro + React.</div>
+              </div>
+              <span class="text-muted transition-transform duration-200 group-hover:translate-x-1">→</span>
+            </a>
+          </li>
+          <div class="ab-line h-px bg-workshop-border" style="transform:scaleX(0);transform-origin:left;"></div>
+          <li>
+            <a href="https://esempe.id" target="_blank" rel="noopener noreferrer" class="py-5 grid grid-cols-[1fr_auto] gap-4 items-center group no-underline transition-colors duration-200 hover:bg-primary/5 -mx-3 px-3 rounded-md">
+              <div>
+                <div class="text-base font-semibold text-primary transition-colors duration-200 group-hover:text-accent mb-1">ESEMPE</div>
+                <div class="text-[0.8125rem] leading-snug text-muted">Minecraft server hosting marketing site. Animated TPS graph, pricing carousel, curtain menu.</div>
+              </div>
+              <div class="flex flex-col items-end gap-1">
+                <span class="text-[0.65rem] uppercase tracking-[0.15em] text-muted whitespace-nowrap">UI/UX Design</span>
+                <span class="text-muted transition-transform duration-200 group-hover:translate-x-1">→</span>
+              </div>
+            </a>
+          </li>
+          <div class="ab-line h-px bg-workshop-border" style="transform:scaleX(0);transform-origin:left;"></div>
+        </ul>
+      </section>
+
+      <!-- 6. Weapons of Choice -->
+      <section class="ab mb-24 md:mb-32" style="opacity:0;transform:translateY(20px);">
+        <h2 class="text-[0.7rem] uppercase tracking-[0.22em] text-muted mb-4">Weapons of Choice</h2>
+        <div class="flex flex-wrap gap-[7px]">
+          <a href="https://astro.build" target="_blank" rel="noopener noreferrer" class="tech-badge text-[0.75rem] px-3 py-1 rounded-[4px] border flex items-center gap-1.5 no-underline transition-all duration-200" style="border-color: color-mix(in srgb, #BC52EE 45%, transparent); color: #BC52EE;" data-bg="#BC52EE">
+            <img src="https://cdn.simpleicons.org/astro/BC52EE" width="14" height="14" alt="Astro" class="transition-all duration-200" />
+            Astro
+          </a>
+          <a href="https://react.dev" target="_blank" rel="noopener noreferrer" class="tech-badge text-[0.75rem] px-3 py-1 rounded-[4px] border flex items-center gap-1.5 no-underline transition-all duration-200" style="border-color: color-mix(in srgb, #61DAFB 45%, transparent); color: #61DAFB;" data-bg="#61DAFB">
+            <img src="https://cdn.simpleicons.org/react/61DAFB" width="14" height="14" alt="React" class="transition-all duration-200" />
+            React
+          </a>
+          <a href="https://www.typescriptlang.org" target="_blank" rel="noopener noreferrer" class="tech-badge text-[0.75rem] px-3 py-1 rounded-[4px] border flex items-center gap-1.5 no-underline transition-all duration-200" style="border-color: color-mix(in srgb, #3178C6 45%, transparent); color: #3178C6;" data-bg="#3178C6">
+            <img src="https://cdn.simpleicons.org/typescript/3178C6" width="14" height="14" alt="TypeScript" class="transition-all duration-200" />
+            TypeScript
+          </a>
+          <a href="https://go.dev" target="_blank" rel="noopener noreferrer" class="tech-badge text-[0.75rem] px-3 py-1 rounded-[4px] border flex items-center gap-1.5 no-underline transition-all duration-200" style="border-color: color-mix(in srgb, #00ADD8 45%, transparent); color: #00ADD8;" data-bg="#00ADD8">
+            <img src="https://cdn.simpleicons.org/go/00ADD8" width="14" height="14" alt="Go" class="transition-all duration-200" />
+            Go
+          </a>
+          <a href="https://tailwindcss.com" target="_blank" rel="noopener noreferrer" class="tech-badge text-[0.75rem] px-3 py-1 rounded-[4px] border flex items-center gap-1.5 no-underline transition-all duration-200" style="border-color: color-mix(in srgb, #06B6D4 45%, transparent); color: #06B6D4;" data-bg="#06B6D4">
+            <img src="https://cdn.simpleicons.org/tailwindcss/06B6D4" width="14" height="14" alt="Tailwind CSS" class="transition-all duration-200" />
+            Tailwind CSS v4
+          </a>
+          <a href="https://animejs.com" target="_blank" rel="noopener noreferrer" class="tech-badge text-[0.75rem] px-3 py-1 rounded-[4px] border flex items-center gap-1.5 no-underline transition-all duration-200" style="border-color: color-mix(in srgb, #F43F5E 45%, transparent); color: #F43F5E;" data-bg="#F43F5E">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5ZM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Anime.js v4
+          </a>
+          <a href="https://www.framer.com/motion" target="_blank" rel="noopener noreferrer" class="tech-badge text-[0.75rem] px-3 py-1 rounded-[4px] border flex items-center gap-1.5 no-underline transition-all duration-200" style="border-color: color-mix(in srgb, #BB4B96 45%, transparent); color: #BB4B96;" data-bg="#BB4B96">
+            <img src="https://cdn.simpleicons.org/framer/BB4B96" width="14" height="14" alt="Framer Motion" class="transition-all duration-200" />
+            Framer Motion
+          </a>
+        </div>
+      </section>
+
+      <!-- 7. Get in Touch -->
+      <section class="ab" style="opacity:0;transform:translateY(20px);">
+        <div class="ab-line h-px bg-workshop-border mb-10" style="transform:scaleX(0);transform-origin:left;"></div>
+        <h2 class="font-extrabold italic tracking-tighter leading-none text-primary mb-7" style="font-size:clamp(1.8rem, 5vw, 2.8rem);">
+          GET IN TOUCH<span class="not-italic text-accent">.</span>
+        </h2>
+
+        <!-- Contact cards -->
+        <div class="grid grid-cols-2 gap-2 mb-2">
+          <!-- LinkedIn - full width -->
+          <a href="https://www.linkedin.com/in/wingky530" target="_blank" rel="noopener noreferrer"
+             class="col-span-2 flex items-center gap-3 px-4 py-3 border border-workshop-border rounded-lg transition-colors duration-200 hover:border-muted no-underline group">
+            <span class="w-[30px] h-[30px] rounded-md border border-workshop-border flex items-center justify-center text-muted flex-shrink-0 transition-all duration-200 group-hover:bg-[#0A66C2] group-active:bg-[#0A66C2] group-hover:border-[#0A66C2] group-active:border-[#0A66C2] group-hover:text-white group-active:text-white">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45Z"/></svg>
+            </span>
+            <div>
+              <span class="block text-[0.8125rem] font-semibold text-primary">LinkedIn</span>
+              <span class="block text-[0.7rem] text-muted font-mono">wingky530</span>
+            </div>
+          </a>
+          <!-- Email - full width -->
+          <a href="mailto:wingky530.id@gmail.com"
+             class="col-span-2 flex items-center gap-3 px-4 py-3 border border-workshop-border rounded-lg transition-colors duration-200 hover:border-muted no-underline group">
+            <span class="w-[30px] h-[30px] rounded-md border border-workshop-border flex items-center justify-center text-muted flex-shrink-0 transition-all duration-200 group-hover:bg-accent group-active:bg-accent group-hover:border-accent group-active:border-accent group-hover:text-background group-active:text-background">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h18a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm9 8.53L4.47 6 3.5 7.15 12 13.47l8.5-6.32L19.53 6 12 12.53Z"/></svg>
+            </span>
+            <div>
+              <span class="block text-[0.8125rem] font-semibold text-primary">Email</span>
+              <span class="block text-[0.7rem] text-muted font-mono">wingky530.id@gmail.com</span>
+            </div>
+          </a>
+          <!-- GitHub - half width -->
+          <a href="https://github.com/Wingky530" target="_blank" rel="noopener noreferrer"
+             class="flex items-center gap-3 px-4 py-3 border border-workshop-border rounded-lg transition-colors duration-200 hover:border-muted no-underline group">
+            <span class="w-[30px] h-[30px] rounded-md border border-workshop-border flex items-center justify-center text-muted flex-shrink-0 transition-all duration-200 group-hover:bg-[#181717] group-active:bg-[#181717] group-hover:border-[#181717] group-active:border-[#181717] group-hover:text-white group-active:text-white">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.09.66-.22.66-.48v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0 1 12 6.8c.85.004 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.16.58.67.48A10.01 10.01 0 0 0 22 12c0-5.52-4.48-10-10-10Z"/></svg>
+            </span>
+            <div>
+              <span class="block text-[0.8125rem] font-semibold text-primary">GitHub</span>
+              <span class="block text-[0.7rem] text-muted font-mono">Wingky530</span>
+            </div>
+          </a>
+          <!-- Discord - half width -->
+          <a href="https://discord.gg/PaNMq8Q2" target="_blank" rel="noopener noreferrer"
+             class="flex items-center gap-3 px-4 py-3 border border-workshop-border rounded-lg transition-colors duration-200 hover:border-muted no-underline group">
+            <span class="w-[30px] h-[30px] rounded-md border border-workshop-border flex items-center justify-center text-muted flex-shrink-0 transition-all duration-200 group-hover:bg-[#5865F2] group-active:bg-[#5865F2] group-hover:border-[#5865F2] group-active:border-[#5865F2] group-hover:text-white group-active:text-white">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.27 5.33C17.94 4.71 16.5 4.26 15 4a.09.09 0 0 0-.07.03c-.18.33-.39.76-.53 1.09a16.09 16.09 0 0 0-4.8 0c-.14-.34-.36-.76-.54-1.09-.01-.02-.04-.03-.07-.03-1.5.26-2.93.71-4.27 1.33-.01 0-.02.01-.03.02-2.72 4.07-3.47 8.03-3.1 11.95 0 .02.01.04.03.05 1.8 1.32 3.53 2.12 5.24 2.65.03.01.06 0 .07-.02.4-.55.76-1.13 1.07-1.74.02-.04 0-.08-.04-.09-.57-.22-1.11-.48-1.64-.78-.04-.02-.04-.08-.01-.11.11-.08.22-.17.33-.25.02-.02.04-.02.07-.01 3.44 1.57 7.15 1.57 10.55 0 .02-.01.05-.01.07.01.11.09.22.17.33.26.04.03.03.09-.01.11-.52.31-1.07.56-1.64.78-.04.01-.05.06-.04.09.32.61.68 1.19 1.07 1.74.02.03.05.03.07.02 1.72-.53 3.45-1.33 5.25-2.65.02-.01.03-.03.03-.05.44-4.53-.73-8.46-3.1-11.95-.01-.01-.02-.02-.04-.02ZM8.52 14.91c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12 0 1.17-.84 2.12-1.89 2.12Zm6.97 0c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12 0 1.17-.83 2.12-1.89 2.12Z"/></svg>
+            </span>
+            <div>
+              <span class="block text-[0.8125rem] font-semibold text-primary">Discord</span>
+              <span class="block text-[0.7rem] text-muted font-mono">Wingky530</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Donate (separated) -->
+        <div class="mt-16">
+          <p class="text-[0.7rem] uppercase tracking-[0.22em] text-muted mb-3">Support the Work</p>
+          <div class="flex items-center justify-between gap-4 px-5 py-4 border border-dashed border-workshop-border rounded-lg mb-24">
+            <div>
+              <div class="text-[0.875rem] font-semibold text-primary mb-0.5">Buy me a coffee</div>
+              <div class="text-[0.775rem] text-muted leading-snug">If my work saved you time, consider supporting it.</div>
+            </div>
+            <a href="https://ko-fi.com/wingky530" target="_blank" rel="noopener noreferrer"
+               class="flex-shrink-0 flex items-center gap-2 text-[0.8rem] font-semibold px-4 py-2 rounded-lg bg-accent text-background transition-opacity duration-200 hover:opacity-80 no-underline">
+              <img src="https://cdn.simpleicons.org/kofi/fff" width="16" height="16" alt="Ko-fi" />
+              Ko-fi →
+            </a>
+          </div>
+        </div>
+
+      </section>
+
+    </article>
+  </main>
+</Layout>
+
+<script>
+  /**
+   * Entry animation — stagger .ab elements, then scaleX .ab-line borders last.
+   * Uses Anime.js v4 timeline. Respects prefers-reduced-motion.
+   */
+  import { createTimeline } from 'animejs/timeline';
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (reduced) {
+    document.querySelectorAll('.ab').forEach(el => {
+      (el as HTMLElement).style.opacity = '1';
+      (el as HTMLElement).style.transform = 'none';
+    });
+    document.querySelectorAll('.ab-line').forEach(el => {
+      (el as HTMLElement).style.transform = 'scaleX(1)';
+    });
+  } else {
+    const tl = createTimeline({
+      easing: 'easeOutExpo',
+      duration: 800,
+    });
+
+    tl.add('h1.ab', {
+      opacity: [0, 1],
+      translateY: [40, 0],
+      scale: [0.95, 1],
+    }, 0);
+
+    tl.add('section:nth-of-type(1) p.ab', {
+      opacity: [0, 1],
+      translateY: [20, 0],
+    }, 80);
+
+    tl.add('section:nth-of-type(2) .ab', {
+      opacity: [0, 1],
+      translateY: [40, 0],
+      translateX: [-20, 0],
+    }, 150);
+
+    tl.add('section:nth-of-type(3) .ab', {
+      opacity: [0, 1],
+      translateY: [40, 0],
+      translateX: [20, 0],
+    }, 250);
+
+    tl.add('section:nth-of-type(4).ab', {
+      opacity: [0, 1],
+      translateY: [40, 0],
+    }, 350);
+
+    tl.add('section:nth-of-type(5).ab', {
+      opacity: [0, 1],
+      translateY: [40, 0],
+    }, 430);
+
+    tl.add('section:nth-of-type(6).ab', {
+      opacity: [0, 1],
+      translateY: [40, 0],
+    }, 510);
+
+    tl.add('section:nth-of-type(7).ab', {
+      opacity: [0, 1],
+      translateY: [40, 0],
+    }, 590);
+
+    // Border lines animate last — scaleX from 0 to 1
+    tl.add('.ab-line', {
+      scaleX: [0, 1],
+      duration: 600,
+      easing: 'easeOutCubic',
+    }, 750);
+  }
+
+  // Tech badge hover fill
+  document.querySelectorAll('.tech-badge').forEach(badge => {
+    const el = badge as HTMLElement;
+    const bg = el.dataset.bg!;
+    const img = el.querySelector('img') as HTMLImageElement | null;
+    const apply = () => {
+      el.style.backgroundColor = bg;
+      el.style.color = '#fff';
+      el.style.borderColor = bg;
+      if (img) img.style.filter = 'brightness(0) invert(1)';
+    };
+    const reset = () => {
+      el.style.backgroundColor = '';
+      el.style.color = '';
+      el.style.borderColor = '';
+      if (img) img.style.filter = '';
+    };
+    el.addEventListener('pointerdown', apply);
+    el.addEventListener('pointerup', reset);
+    el.addEventListener('pointerleave', reset);
+    el.addEventListener('mouseenter', apply);
+    el.addEventListener('mouseleave', reset);
+  });
+</script>

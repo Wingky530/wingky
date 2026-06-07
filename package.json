@@ -15,7 +15,7 @@
     "preview-local": "astro build && astro preview"
   },
   "dependencies": {
-    "@astrojs/react": "^4.0.0",
+    "@astrojs/react": "^5.0.7",
     "@phosphor-icons/react": "^2.0.0",
     "@tailwindcss/vite": "^4.0.0",
     "animejs": "^4.4.1",

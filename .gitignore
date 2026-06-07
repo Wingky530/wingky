@@ -9,9 +9,8 @@ node_modules/
 # logs
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
-
+yarn-error.log*
 
 # environment variables
 .env
@@ -20,7 +19,8 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
-# etc
+# IDE and tool-specific files
 .idea/
 .vscode/
-AGENTS.md
+.impeccable/
+.opencode/

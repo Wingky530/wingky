@@ -1,14 +1,177 @@
 ---
+/**
+ * Nav.astro
+ *
+ * Responsive navigation bar with optional slide-in menu panel.
+ * Shows AnimatedTitle (non-homepage variant) on the left and either a hamburger
+ * menu button or a static opposite-page link on the right.
+ *
+ * ── Features ──
+ * - menu prop        Enables hamburger toggle with fullscreen overlay + card panel
+ * - oppositeLabel    Auto-resolves the complementary page link (Projects ↔ About)
+ * - openMenu        Random-direction slide-in for backdrop and clip-path reveal for panel
+ * - closeMenu       Reverse animation with staggered timing
+ * - Keyboard        Escape key closes menu
+ */
 import AnimatedTitle from './AnimatedTitle.astro';
+
+interface Props {
+  menu?: boolean;
+}
+
+const { menu = false } = Astro.props;
+const path = Astro.url.pathname;
+let oppositeLabel = '';
+let oppositeHref = '';
+if (path.startsWith('/projects')) {
+  oppositeLabel = 'ABOUT ME';
+  oppositeHref = '/about';
+} else if (path.startsWith('/about')) {
+  oppositeLabel = 'PROJECTS';
+  oppositeHref = '/projects';
+}
 ---
-<nav class="fixed top-0 left-0 right-0 z-10 flex items-center justify-end max-w-5xl mx-auto w-full">
+
+<nav class="flex items-center justify-between px-4 md:px-8 h-16 bg-background">
   <AnimatedTitle isHomePage={false} text="wingky." />
-  <ul class="flex space-x-8 p-6 text-sm font-medium text-muted">
-    <li>
-      <a href="/projects" class="hover:text-primary transition-colors duration-200">Projects</a>
-    </li>
-    <li>
-      <a href="/contact" class="hover:text-primary transition-colors duration-200">Contact</a>
-    </li>
-  </ul>
+
+  {menu ? (
+  <button id="menu-toggle" class="flex flex-col items-end gap-1.5 p-3" aria-label="Menu">
+    <span class="block h-0.5 w-6 rounded bg-primary" />
+    <span class="block h-0.5 w-5 rounded bg-accent" />
+  </button>
+  ) : oppositeLabel && (
+  <a href={oppositeHref} class="text-sm tracking-widest text-muted hover:text-primary transition-colors duration-200">
+    {oppositeLabel}
+  </a>
+  )}
 </nav>
+
+{menu && (
+<div id="menu-group" class="fixed inset-0 z-60 pointer-events-none">
+  <div id="menu-backdrop" class="absolute inset-0 bg-primary/40 backdrop-blur-sm"
+    style="transform: translateX(-100%); transition: transform 0.45s cubic-bezier(0.76, 0, 0.24, 1);"
+    onclick="document.getElementById('menu-toggle')?.click()"></div>
+
+  <div id="menu-panel-wrap" class="absolute inset-0 flex items-center justify-center">
+    <div id="menu-panel" class="w-[88%] bg-background border border-border shadow-2xl rounded-2xl overflow-hidden pointer-events-auto"
+      style="max-width: 400px; clip-path: inset(0 100% 0 0); transition: clip-path 0.45s cubic-bezier(0.76, 0, 0.24, 1);">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+        <span class="text-base font-bold text-primary">Menu</span>
+        <button onclick="document.getElementById('menu-toggle')?.click()" class="p-1.5 text-muted hover:text-primary rounded-lg transition-colors" aria-label="Close menu">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M5 5l10 10M15 5l-10 10"/>
+          </svg>
+        </button>
+      </div>
+      <nav class="p-3 flex flex-col gap-1">
+        <a href="/projects" onclick="document.getElementById('menu-toggle')?.click()"
+          class="px-4 py-3 text-sm font-medium text-muted hover:text-accent rounded-lg transition-colors">PROJECTS</a>
+        <a href="/about" onclick="document.getElementById('menu-toggle')?.click()"
+          class="px-4 py-3 text-sm font-medium text-muted hover:text-accent rounded-lg transition-colors">ABOUT</a>
+      </nav>
+    </div>
+  </div>
+</div>
+)}
+
+<style>
+  #menu-toggle span {
+    transition: transform 0.3s cubic-bezier(0.76, 0, 0.24, 1), width 0.3s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  #menu-toggle[data-open="true"] span:first-child {
+    width: 1.5rem;
+    transform: rotate(45deg) translateY(6px);
+  }
+  #menu-toggle[data-open="true"] span:last-child {
+    width: 1.5rem;
+    transform: rotate(-45deg) translateY(-6px);
+  }
+  #menu-group.no-transition #menu-backdrop,
+  #menu-group.no-transition #menu-panel {
+    transition: none !important;
+  }
+</style>
+
+<script>
+  const toggle = document.getElementById('menu-toggle');
+  if (!toggle) { /* menu mode disabled — skip script */ } else {
+  const group = document.getElementById('menu-group')!;
+  const backdrop = document.getElementById('menu-backdrop')!;
+  const panel = document.getElementById('menu-panel')!;
+
+  const DIRECTIONS = ['top', 'bottom', 'left', 'right'];
+
+  function slideDir(dir) {
+    switch (dir) {
+      case 'top':    return 'translateY(-100%)';
+      case 'bottom': return 'translateY(100%)';
+      case 'left':   return 'translateX(-100%)';
+      case 'right':  return 'translateX(100%)';
+    }
+  }
+
+  function clipDir(dir) {
+    switch (dir) {
+      case 'top':    return 'inset(100% 0 0 0)';
+      case 'bottom': return 'inset(0 0 100% 0)';
+      case 'left':   return 'inset(0 100% 0 0)';
+      case 'right':  return 'inset(0 0 0 100%)';
+    }
+  }
+
+  function closeMenu() {
+    toggle.removeAttribute('data-open');
+
+    panel.style.clipPath = clipDir(pDir);
+
+    setTimeout(() => {
+      backdrop.style.transform = slideDir(bDir);
+    }, 350);
+
+    setTimeout(() => {
+      group.classList.add('pointer-events-none');
+    }, 800);
+
+    document.body.style.overflow = '';
+  }
+
+  function openMenu() {
+    toggle.setAttribute('data-open', 'true');
+    bDir = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+    pDir = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+
+    group.classList.add('no-transition');
+    backdrop.style.transform = slideDir(bDir);
+    panel.style.clipPath = clipDir(pDir);
+    group.classList.remove('pointer-events-none');
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        group.classList.remove('no-transition');
+        backdrop.style.transform = '';
+
+        setTimeout(() => {
+          panel.style.clipPath = 'inset(0)';
+        }, 250);
+      });
+    });
+
+    document.body.style.overflow = 'hidden';
+  }
+
+  let bDir = 'left', pDir = 'right';
+
+  toggle.addEventListener('click', () => {
+    const isOpen = toggle.getAttribute('data-open') === 'true';
+    if (isOpen) closeMenu();
+    else openMenu();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && toggle.getAttribute('data-open') === 'true') {
+      closeMenu();
+    }
+  });
+  }
+</script>
